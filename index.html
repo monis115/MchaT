@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MchaT</title>
     
     <!-- PWA Meta Tags -->
@@ -62,13 +62,13 @@
         }
     </style>
 </head>
-<body class="bg-black flex flex-col items-center justify-center min-h-screen antialiased text-gray-300 overflow-x-hidden">
+<body class="bg-black flex flex-col items-center justify-center min-h-screen antialiased text-gray-300">
 
     <!-- Main container for the chat interface -->
-    <div class="w-screen max-w-full sm:max-w-4xl mx-auto px-0 sm:px-4 flex flex-col h-[100dvh] min-h-0 overflow-x-hidden">
+    <div class="w-full max-w-4xl mx-auto px-1 sm:px-4 flex flex-col h-[100dvh] min-h-0">
         
         <!-- Header Section -->
-        <header class="relative flex items-center justify-center my-2 md:my-6 h-10 px-1 sm:px-0 w-full">
+        <header class="relative flex items-center justify-center my-2 md:my-6 h-10 px-1 sm:px-0">
             <!-- Logo -->
             <div class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer" onclick="location.reload()">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -88,7 +88,7 @@
         </header>
 
         <!-- Chat messages container -->
-        <main id="chat-container" class="flex-1 overflow-y-auto p-0 sm:p-4 space-y-2 sm:space-y-4 max-w-full min-h-0 w-full overflow-x-hidden">
+        <main id="chat-container" class="flex-1 overflow-y-auto p-1 sm:p-4 space-y-3 sm:space-y-4 max-w-full min-h-0">
             <!-- Placeholder for when the chat is empty -->
             <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-600">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
@@ -102,7 +102,7 @@
         </main>
         
         <!-- Loading Indicator -->
-        <div id="loading-indicator" class="hidden flex items-center justify-center p-2 sm:p-4 w-full">
+        <div id="loading-indicator" class="hidden flex items-center justify-center p-2 sm:p-4">
             <div class="flex items-center space-x-2">
                 <!-- Spinner SVG -->
                 <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -114,28 +114,28 @@
         </div>
 
         <!-- Action buttons container -->
-        <div class="flex justify-center gap-2 mb-2 px-0 sm:px-0 w-full">
-            <button id="surprise-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-base sm:text-sm text-gray-300 px-4 py-3 sm:px-4 sm:py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[180px]">
+        <div class="flex justify-center gap-2 mb-2 px-1 sm:px-0">
+            <button id="surprise-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[160px]">
                 ✨ Surprise Me
             </button>
-            <button id="summarize-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-base sm:text-sm text-gray-300 px-4 py-3 sm:px-4 sm:py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[180px]">
+            <button id="summarize-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[160px]">
                 ✨ Summarize
             </button>
         </div>
 
         <!-- Form container for the input and button -->
-        <footer class="relative w-full bg-gray-900/70 border border-gray-800 rounded-2xl shadow-2xl mb-2 sm:mb-4 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 px-0 sm:px-0 z-10">
+        <footer class="relative w-full bg-gray-900/70 border border-gray-800 rounded-2xl shadow-lg mb-2 sm:mb-4 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 px-1 sm:px-0">
             <!-- Textarea for user input -->
             <textarea 
                 id="chatInput"
                 rows="1"
-                class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 sm:p-4 pr-16 focus:outline-none resize-none overflow-y-auto min-h-[48px] max-h-[160px] rounded-xl text-base sm:text-base"
+                class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-3 sm:p-4 pr-14 sm:pr-16 focus:outline-none resize-none overflow-y-auto min-h-[44px] max-h-[160px] rounded-xl"
                 placeholder="Ask anything..."
                 style="touch-action: manipulation;"
             ></textarea>
             
             <!-- Send button -->
-            <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 transition-all duration-200 p-4 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-95 w-12 h-12 sm:w-12 sm:h-12">
+            <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 transition-all duration-200 p-3 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-95 w-10 h-10 sm:w-12 sm:h-12">
                 <!-- Send Icon (SVG) -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white transition-transform duration-200 ease-in-out group-hover:rotate-45">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -279,7 +279,7 @@
             const messageBubble = document.createElement('div');
             
             messageWrapper.classList.add('flex', 'animate-slide-in-up');
-            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-4', 'sm:p-4', 'max-w-full', 'w-full', 'break-words', 'mx-1', 'sm:mx-0', 'text-base');
+            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-3', 'sm:p-4', 'max-w-full', 'break-words');
 
             if (sender === 'user') {
                 messageWrapper.classList.add('justify-end');
