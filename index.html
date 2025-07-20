@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MchaT</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000"/>
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/000000/ffffff?text=Mchat">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Markdown-it library to render markdown from API -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
+
+    <style>
+        /* Custom styles to apply the Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide scrollbar for the textarea but allow scrolling */
+        textarea::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        /* Styles for chat bubbles */
+        .chat-bubble {
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        /* Styles for markdown-rendered content for better readability */
+        .prose { color: inherit; }
+        .prose h1, .prose h2, .prose h3 { margin-top: 0.75em; margin-bottom: 0.5em; line-height: 1.2; }
+        .prose p { margin-bottom: 0.75em; }
+        .prose ul, .prose ol { margin-left: 1.5em; margin-bottom: 0.75em; }
+        .prose pre { white-space: pre-wrap; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; }
+        .prose code { font-family: monospace; background-color: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; }
+        .prose a { color: #60a5fa; }
+        .prose strong { color: inherit; }
+
+        /* Animation for new messages */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .animate-slide-in-up {
+            animation: slideInUp 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-black flex flex-col items-center justify-center min-h-screen antialiased text-gray-300">
+
+    <!-- Main container for the chat interface -->
+    <div class="w-full max-w-4xl mx-auto px-2 sm:px-4 flex flex-col h-screen">
+        
+        <!-- Header Section -->
+        <header class="relative flex items-center justify-center my-4 md:my-6 h-10">
+            <!-- Logo -->
+            <div class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logo-gradient" x1="4" y1="6" x2="20" y2="18" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#3B82F6"/>
+                            <stop offset="1" stop-color="#8B5CF6"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M4 18L9 12L12 15L15 12L20 18" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 12L9 6L12 9L15 6L20 12" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="font-bold text-xl text-white tracking-tight">Mchat</span>
+            </div>
+            
+            <!-- Main Title -->
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-100 tracking-tighter"></h1>
+        </header>
+
+        <!-- Chat messages container -->
+        <main id="chat-container" class="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4">
+            <!-- Placeholder for when the chat is empty -->
+            <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
+                    <path d="M12 8V4H8"/>
+                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M8 12h8"/>
+                </svg>
+                <p class="mt-4 text-lg">Ask me anything to get started.</p>
+            </div>
+        </main>
+        
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden flex items-center justify-center p-4">
+            <div class="flex items-center space-x-2">
+                <!-- Spinner SVG -->
+                <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span class="text-sm text-gray-500 ml-2">Thinking...</span>
+            </div>
+        </div>
+
+        <!-- Action buttons container -->
+        <div class="flex justify-center gap-2 mb-2">
+            <button id="surprise-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800">
+                ✨ Surprise Me
+            </button>
+            <button id="summarize-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800">
+                ✨ Summarize
+            </button>
+        </div>
+
+        <!-- Form container for the input and button -->
+        <footer class="relative w-full bg-gray-900/70 border border-gray-800 rounded-2xl shadow-lg mb-4 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+            <!-- Textarea for user input -->
+            <textarea 
+                id="chatInput"
+                rows="1"
+                class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 pr-16 focus:outline-none resize-none overflow-y-auto"
+                placeholder="Ask anything..."
+            ></textarea>
+            
+            <!-- Send button -->
+            <button id="send-btn" class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 transition-all duration-200 p-3 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-95">
+                <!-- Send Icon (SVG) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white transition-transform duration-200 ease-in-out group-hover:rotate-45">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </footer>
+    </div>
+
+    <script>
+        // --- PWA (Progressive Web App) Implementation ---
+        
+        /**
+         * Dynamically creates and registers the manifest and service worker
+         * to turn this single HTML file into an installable PWA with offline capabilities.
+         */
+        function setupPWA() {
+            // 1. Create Manifest dynamically
+            const manifest = {
+                "name": "Mchat - Gemini Chat",
+                "short_name": "Mchat",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#000000",
+                "theme_color": "#000000",
+                "description": "A modern chat application powered by Gemini.",
+                "icons": [
+                    { "src": "https://placehold.co/192x192/000000/ffffff?text=Mchat", "sizes": "192x192", "type": "image/png" },
+                    { "src": "https://placehold.co/512x512/000000/ffffff?text=Mchat", "sizes": "512x512", "type": "image/png" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
+
+            // 2. Create and Register Service Worker
+            if ('serviceWorker' in navigator) {
+                const swContent = `
+                    const CACHE_NAME = 'mchat-cache-v1';
+                    const urlsToCache = [
+                        '/',
+                        'https://cdn.tailwindcss.com',
+                        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+                        'https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js'
+                    ];
+
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    console.log('Opened cache');
+                                    return cache.addAll(urlsToCache);
+                                })
+                        );
+                    });
+
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => {
+                                    if (response) {
+                                        return response; // Serve from cache
+                                    }
+                                    return fetch(event.request); // Fetch from network
+                                })
+                        );
+                    });
+                `;
+                const swBlob = new Blob([swContent], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(swBlob);
+
+                navigator.serviceWorker.register(swURL)
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            }
+        }
+        
+        // Run PWA setup on window load
+        window.addEventListener('load', setupPWA);
+
+        // --- Standard Application Code ---
+
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('send-btn');
+        const chatContainer = document.getElementById('chat-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const surpriseBtn = document.getElementById('surprise-btn');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        
+        const md = window.markdownit({ html: true, linkify: true, typographer: true });
+
+        let chatHistory = [];
+        let isLoading = false;
+
+        const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk"; // Leave empty
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        
+        const systemInstruction = {
+            role: "system",
+            parts: [{ text: "You are a friendly and helpful assistant. Provide answers in a conversational, paragraph-based format. Avoid using markdown lists with asterisks unless it is essential for clarity. Be natural and engaging."}]
+        };
+
+        async function callGeminiAPI(prompt, history = []) {
+            const payload = {
+                contents: [...history, { role: "user", parts: [{ text: prompt }] }],
+                systemInstruction: systemInstruction
+            };
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                const result = await response.json();
+                return result.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                return `An error occurred: ${error.message}.`;
+            }
+        }
+
+        function appendMessage(message, sender) {
+            const messageWrapper = document.createElement('div');
+            const messageBubble = document.createElement('div');
+            
+            messageWrapper.classList.add('flex', 'animate-slide-in-up');
+            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-4');
+
+            if (sender === 'user') {
+                messageWrapper.classList.add('justify-end');
+                messageBubble.classList.add('bg-white', 'text-black', 'border', 'border-gray-200');
+                messageBubble.textContent = message;
+            } else if (sender === 'ai') {
+                messageWrapper.classList.add('justify-start');
+                messageBubble.classList.add('bg-black', 'text-white', 'border', 'border-gray-700', 'prose');
+                messageBubble.innerHTML = md.render(message);
+            } else { 
+                 messageWrapper.classList.add('justify-center');
+                 messageBubble.classList.add('bg-gray-900', 'text-gray-500', 'text-sm', 'italic');
+                 messageBubble.textContent = message;
+            }
+
+            messageWrapper.appendChild(messageBubble);
+            chatContainer.appendChild(messageWrapper);
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function setLoading(state) {
+            isLoading = state;
+            sendBtn.disabled = state;
+            chatInput.disabled = state;
+            surpriseBtn.disabled = state;
+            summarizeBtn.disabled = state;
+            loadingIndicator.classList.toggle('hidden', !state);
+        }
+
+        async function handleSendMessage() {
+            const prompt = chatInput.value.trim();
+            if (!prompt || isLoading) return;
+            document.getElementById('empty-chat-placeholder')?.remove();
+            appendMessage(prompt, 'user');
+            setLoading(true);
+            const aiResponse = await callGeminiAPI(prompt, chatHistory);
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+            appendMessage(aiResponse, 'ai');
+            setLoading(false);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            chatInput.focus();
+        }
+
+        async function handleSurpriseMe() {
+            if (isLoading) return;
+            document.getElementById('empty-chat-placeholder')?.remove();
+            setLoading(true);
+            appendMessage("Generating a surprise prompt...", 'system');
+            const prompt = "Suggest one fun and interesting question to ask an AI assistant. Make it creative and unexpected. Respond with only the question itself.";
+            const surpriseQuestion = await callGeminiAPI(prompt);
+            chatInput.value = surpriseQuestion.replace(/"/g, ''); 
+            chatContainer.removeChild(chatContainer.lastChild);
+            setLoading(false);
+            chatInput.focus();
+        }
+        
+        async function handleSummarize() {
+            if (isLoading) return;
+            if (chatHistory.length < 2) {
+                appendMessage("There's not enough conversation to summarize yet.", 'system');
+                return;
+            }
+            setLoading(true);
+            appendMessage("Generating summary...", 'system');
+            const conversationText = chatHistory.map(entry => `${entry.role === 'model' ? 'AI' : 'You'}: ${entry.parts[0].text}`).join('\n');
+            const prompt = `Please provide a concise, paragraph-style summary of the following conversation:\n\n---\n\n${conversationText}`;
+            const summary = await callGeminiAPI(prompt, []);
+            appendMessage(summary, 'ai');
+            setLoading(false);
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        surpriseBtn.addEventListener('click', handleSurpriseMe);
+        summarizeBtn.addEventListener('click', handleSummarize);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+        chatInput.addEventListener('input', () => {
+            chatInput.style.height = 'auto';
+            const maxHeight = 200;
+            const newHeight = Math.min(chatInput.scrollHeight, maxHeight);
+            chatInput.style.height = `${newHeight}px`;
+        });
+    </script>
+
+</body>
+</html>
