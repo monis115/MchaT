@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MchaT</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000"/>
-    <link rel="apple-touch-icon" href="https://placehold.co/192x192/000000/ffffff?text=Mchat">
-    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/000000/ffffff?text=M">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWNoYVQgLSBHZW1pbmkgQ2hhdCIsInNob3J0X25hbWUiOiJNY2hhVCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjMDAwMDAwIiwiZGVzY3JpcHRpb24iOiJBIG1vZGVybiBjaGF0IGFwcGxpY2F0aW9uIHBvd2VyZWQgYnkgR2VtaW5pLiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3BsYWNlaG9sZC5jby8xOTJ4MTkyLzAwMDAwMC9mZmZmZmY/dGV4dD1NIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9wbGFjZWhvbGQuY28vNTEyeDUxMi8wMDAwMDAvZmZmZmZmP3RleHQ9TSIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
 
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,29 +24,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
 
     <style>
+        /* Prevent iOS Safari bounce effect */
+        html, body {
+            position: fixed;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         /* Custom styles to apply the Inter font */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
+        
+        /* Main app container */
+        .app-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
         /* Hide scrollbar for the textarea but allow scrolling */
         textarea::-webkit-scrollbar {
             width: 0px;
             background: transparent;
         }
+        
+        /* Prevent zoom on input focus on iOS */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
+        
         /* Styles for chat bubbles */
         .chat-bubble {
             max-width: 85%;
             word-wrap: break-word;
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Styles for markdown-rendered content for better readability */
-        .prose { color: inherit; }
+        
+        /* Better touch targets for mobile */
+        button {
+            min-height: 44px;
+            min-width: 44px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Styles for markdown-rendered content */
+        .prose { color: inherit; max-width: none; }
         .prose h1, .prose h2, .prose h3 { margin-top: 0.75em; margin-bottom: 0.5em; line-height: 1.2; }
         .prose p { margin-bottom: 0.75em; }
         .prose ul, .prose ol { margin-left: 1.5em; margin-bottom: 0.75em; }
-        .prose pre { white-space: pre-wrap; background-color: rgba(255,255,255,0.05); padding: 1rem; border-radius: 0.5rem; }
-        .prose code { font-family: monospace; background-color: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; }
-        .prose a { color: #60a5fa; }
-        .prose strong { color: inherit; }
+        .prose pre { 
+            white-space: pre-wrap; 
+            background-color: rgba(255,255,255,0.05); 
+            padding: 1rem; 
+            border-radius: 0.5rem; 
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .prose code { 
+            font-family: 'SF Mono', Monaco, Consolas, monospace; 
+            background-color: rgba(255,255,255,0.1); 
+            padding: 2px 5px; 
+            border-radius: 4px; 
+            font-size: 0.875em;
+        }
+        .prose a { color: #60a5fa; text-decoration: underline; }
+        .prose strong { color: inherit; font-weight: 600; }
 
         /* Animation for new messages */
         @keyframes slideInUp {
@@ -60,18 +113,45 @@
         .animate-slide-in-up {
             animation: slideInUp 0.3s ease-out forwards;
         }
+        
+        /* Safe area handling for modern phones */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        
+        /* Virtual keyboard handling */
+        .keyboard-open {
+            height: calc(100vh - var(--keyboard-height, 0px));
+        }
+        
+        /* Smooth scrolling for chat */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Loading dots animation */
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
+        }
+        .loading-dot {
+            animation: blink 1.4s infinite;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
     </style>
 </head>
-<body class="bg-black flex flex-col items-center justify-center min-h-screen antialiased text-gray-300">
+<body class="bg-black text-gray-300 overscroll-none">
 
-    <!-- Main container for the chat interface -->
-    <div class="w-full max-w-4xl mx-auto px-1 sm:px-4 flex flex-col h-[100dvh] min-h-0">
+    <!-- Main app container -->
+    <div class="app-container">
         
         <!-- Header Section -->
-        <header class="relative flex items-center justify-center my-2 md:my-6 h-10 px-1 sm:px-0">
+        <header class="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-800/50 backdrop-blur-xl bg-black/80">
             <!-- Logo -->
-            <div class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer" onclick="location.reload()">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="logo-gradient" x1="4" y1="6" x2="20" y2="18" gradientUnits="userSpaceOnUse">
                             <stop stop-color="#3B82F6"/>
@@ -81,226 +161,263 @@
                     <path d="M4 18L9 12L12 15L15 12L20 18" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M4 12L9 6L12 9L15 6L20 12" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="font-bold text-xl text-white tracking-tight">MchaT</span>
+                <span class="font-bold text-lg text-white tracking-tight">MchaT</span>
             </div>
-            <!-- Main Title -->
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-100 tracking-tighter"></h1>
+            
+            <!-- Menu button (for future features) -->
+            <button class="p-2 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                </svg>
+            </button>
         </header>
 
         <!-- Chat messages container -->
-        <main id="chat-container" class="flex-1 overflow-y-auto p-1 sm:p-4 space-y-3 sm:space-y-4 max-w-full min-h-0">
+        <main id="chat-container" class="flex-1 overflow-y-auto smooth-scroll p-4 space-y-3">
             <!-- Placeholder for when the chat is empty -->
-            <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
+            <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-600 px-6 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 mb-4">
                     <path d="M12 8V4H8"/>
                     <rect x="2" y="6" width="20" height="12" rx="2"/>
                     <path d="M12 16v-4"/>
                     <path d="M8 12h8"/>
                 </svg>
-                <p class="mt-4 text-lg">Ask me anything to get started.</p>
+                <h2 class="text-xl font-semibold text-gray-400 mb-2">Welcome to MchaT</h2>
+                <p class="text-base text-gray-500">Ask me anything to get started</p>
             </div>
         </main>
         
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="hidden flex items-center justify-center p-2 sm:p-4">
-            <div class="flex items-center space-x-2">
-                <!-- Spinner SVG -->
-                <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-                <span class="text-sm text-gray-500 ml-2">Thinking...</span>
+        <!-- Bottom section with input -->
+        <footer class="flex-shrink-0 border-t border-gray-800/50 bg-black/95 backdrop-blur-xl safe-bottom">
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="hidden px-4 py-3">
+                <div class="flex items-center space-x-1 text-gray-500">
+                    <span class="text-sm">AI is thinking</span>
+                    <span class="loading-dot">•</span>
+                    <span class="loading-dot">•</span>
+                    <span class="loading-dot">•</span>
+                </div>
             </div>
-        </div>
 
-        <!-- Action buttons container -->
-        <div class="flex justify-center gap-2 mb-2 px-1 sm:px-0">
-            <button id="surprise-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[160px]">
-                ✨ Surprise Me
-            </button>
-            <button id="summarize-btn" class="bg-gray-900/50 hover:bg-gray-900/80 transition-colors text-sm text-gray-300 px-3 sm:px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-800 w-full max-w-[160px]">
-                ✨ Summarize
-            </button>
-        </div>
+            <!-- Action buttons container -->
+            <div class="flex gap-2 px-4 py-2">
+                <button id="surprise-btn" class="flex-1 bg-gray-900/50 hover:bg-gray-900/80 active:scale-95 transition-all text-sm text-gray-300 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 border border-gray-800">
+                    <span>✨</span>
+                    <span class="font-medium">Surprise Me</span>
+                </button>
+                <button id="summarize-btn" class="flex-1 bg-gray-900/50 hover:bg-gray-900/80 active:scale-95 transition-all text-sm text-gray-300 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 border border-gray-800">
+                    <span>📝</span>
+                    <span class="font-medium">Summarize</span>
+                </button>
+            </div>
 
-        <!-- Form container for the input and button -->
-        <footer class="relative w-full bg-gray-900/70 border border-gray-800 rounded-2xl shadow-lg mb-2 sm:mb-4 transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 px-1 sm:px-0">
-            <!-- Textarea for user input -->
-            <textarea 
-                id="chatInput"
-                rows="1"
-                class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-3 sm:p-4 pr-14 sm:pr-16 focus:outline-none resize-none overflow-y-auto min-h-[44px] max-h-[160px] rounded-xl"
-                placeholder="Ask anything..."
-                style="touch-action: manipulation;"
-            ></textarea>
-            
-            <!-- Send button -->
-            <button id="send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 transition-all duration-200 p-3 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-95 w-10 h-10 sm:w-12 sm:h-12">
-                <!-- Send Icon (SVG) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white transition-transform duration-200 ease-in-out group-hover:rotate-45">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-            </button>
+            <!-- Input container -->
+            <div class="relative px-4 pb-4">
+                <div class="relative bg-gray-900/70 border border-gray-800 rounded-2xl shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+                    <!-- Textarea for user input -->
+                    <textarea 
+                        id="chatInput"
+                        rows="1"
+                        class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 pr-14 focus:outline-none resize-none overflow-y-auto min-h-[52px] max-h-[120px] rounded-2xl"
+                        placeholder="Ask anything..."
+                        enterkeyhint="send"
+                    ></textarea>
+                    
+                    <!-- Send button -->
+                    <button id="send-btn" class="absolute right-2 bottom-2 bg-blue-600 hover:bg-blue-700 active:scale-90 transition-all duration-200 p-2.5 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100 w-10 h-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </footer>
     </div>
 
     <script>
         // --- PWA (Progressive Web App) Implementation ---
-        
-        /**
-         * Dynamically creates and registers the manifest and service worker
-         * to turn this single HTML file into an installable PWA with offline capabilities.
-         */
-        function setupPWA() {
-            // 1. Create Manifest dynamically
-            const manifest = {
-                "name": "Mchat - Gemini Chat",
-                "short_name": "Mchat",
-                "start_url": ".",
-                "display": "standalone",
-                "background_color": "#000000",
-                "theme_color": "#000000",
-                "description": "A modern chat application powered by Gemini.",
-                "icons": [
-                    { "src": "https://placehold.co/192x192/000000/ffffff?text=Mchat", "sizes": "192x192", "type": "image/png" },
-                    { "src": "https://placehold.co/512x512/000000/ffffff?text=Mchat", "sizes": "512x512", "type": "image/png" }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-            const manifestURL = URL.createObjectURL(manifestBlob);
-            document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
+        if ('serviceWorker' in navigator) {
+            // Create service worker content
+            const swContent = `
+                const CACHE_NAME = 'mchat-v2';
+                const urlsToCache = [
+                    '/',
+                    'https://cdn.tailwindcss.com',
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+                    'https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js',
+                    'https://placehold.co/192x192/000000/ffffff?text=M',
+                    'https://placehold.co/512x512/000000/ffffff?text=M'
+                ];
 
-            // 2. Create and Register Service Worker
-            if ('serviceWorker' in navigator) {
-                const swContent = `
-                    const CACHE_NAME = 'mchat-cache-v1';
-                    const urlsToCache = [
-                        '/',
-                        'https://cdn.tailwindcss.com',
-                        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-                        'https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js'
-                    ];
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.addAll(urlsToCache))
+                    );
+                });
 
-                    self.addEventListener('install', event => {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    console.log('Opened cache');
-                                    return cache.addAll(urlsToCache);
-                                })
-                        );
-                    });
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => response || fetch(event.request))
+                    );
+                });
 
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then(response => {
-                                    if (response) {
-                                        return response; // Serve from cache
-                                    }
-                                    return fetch(event.request); // Fetch from network
-                                })
-                        );
-                    });
-                `;
-                const swBlob = new Blob([swContent], { type: 'application/javascript' });
-                const swURL = URL.createObjectURL(swBlob);
-
-                navigator.serviceWorker.register(swURL)
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed: ', error);
-                    });
-            }
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.filter(cacheName => cacheName !== CACHE_NAME)
+                                    .map(cacheName => caches.delete(cacheName))
+                            );
+                        })
+                    );
+                });
+            `;
+            
+            const blob = new Blob([swContent], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swUrl).then(reg => {
+                console.log('Service Worker registered');
+            }).catch(err => {
+                console.error('Service Worker registration failed:', err);
+            });
         }
+
+        // --- Mobile Keyboard Height Detection ---
+        let keyboardHeight = 0;
+        let viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
         
-        // Run PWA setup on window load
-        window.addEventListener('load', setupPWA);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const currentHeight = window.visualViewport.height;
+                keyboardHeight = viewportHeight - currentHeight;
+                document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+                
+                // Adjust container when keyboard is shown
+                if (keyboardHeight > 50) {
+                    document.querySelector('.app-container').classList.add('keyboard-open');
+                    scrollToBottom();
+                } else {
+                    document.querySelector('.app-container').classList.remove('keyboard-open');
+                }
+            });
+        }
 
-        // --- Standard Application Code ---
-
+        // --- Application Code ---
         const chatInput = document.getElementById('chatInput');
         const sendBtn = document.getElementById('send-btn');
         const chatContainer = document.getElementById('chat-container');
         const loadingIndicator = document.getElementById('loading-indicator');
         const surpriseBtn = document.getElementById('surprise-btn');
         const summarizeBtn = document.getElementById('summarize-btn');
-        const mainContainer = document.querySelector('.max-w-4xl.mx-auto');
-
-        // --- Mobile keyboard visibility fix ---
-        chatInput.addEventListener('focus', () => {
-            mainContainer.classList.add('pb-[30vh]');
-            setTimeout(() => {
-                chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        });
-        chatInput.addEventListener('blur', () => {
-            mainContainer.classList.remove('pb-[30vh]');
-        });
         
-        const md = window.markdownit({ html: true, linkify: true, typographer: true });
+        const md = window.markdownit({ 
+            html: true, 
+            linkify: true, 
+            typographer: true,
+            breaks: true 
+        });
 
         let chatHistory = [];
         let isLoading = false;
+        let touchStartY = 0;
 
-        const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk"; // Leave empty
+        const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
         
         const systemInstruction = {
             role: "system",
-            parts: [{ text: "You are a friendly and helpful assistant. Provide answers in a conversational, paragraph-based format. Avoid using markdown lists with asterisks unless it is essential for clarity. Be natural and engaging."}]
+            parts: [{ text: "You are a friendly and helpful assistant. Provide answers in a conversational, paragraph-based format. Keep responses concise and mobile-friendly. Avoid using markdown lists with asterisks unless essential for clarity. Be natural and engaging."}]
         };
 
+        // Prevent pull-to-refresh on mobile
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const scrollTop = chatContainer.scrollTop;
+            
+            if (scrollTop === 0 && touchY > touchStartY) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Auto-resize textarea
+        function resizeTextarea() {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+        }
+
+        // Smooth scroll to bottom
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatContainer.scrollTo({
+                    top: chatContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+
+        // API call function
         async function callGeminiAPI(prompt, history = []) {
             const payload = {
                 contents: [...history, { role: "user", parts: [{ text: prompt }] }],
                 systemInstruction: systemInstruction
             };
+            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
                 if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                
                 const result = await response.json();
                 return result.candidates[0].content.parts[0].text;
             } catch (error) {
                 console.error("Error calling Gemini API:", error);
-                return `An error occurred: ${error.message}.`;
+                return `I apologize, but I encountered an error. Please try again.`;
             }
         }
 
+        // Append message to chat
         function appendMessage(message, sender) {
             const messageWrapper = document.createElement('div');
             const messageBubble = document.createElement('div');
             
             messageWrapper.classList.add('flex', 'animate-slide-in-up');
-            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-3', 'sm:p-4', 'max-w-full', 'break-words');
+            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-4', 'max-w-full', 'break-words');
 
             if (sender === 'user') {
                 messageWrapper.classList.add('justify-end');
-                messageBubble.classList.add('bg-white', 'text-black', 'border', 'border-gray-200');
+                messageBubble.classList.add('bg-white', 'text-black', 'ml-8');
                 messageBubble.textContent = message;
             } else if (sender === 'ai') {
                 messageWrapper.classList.add('justify-start');
-                messageBubble.classList.add('bg-black', 'text-white', 'border', 'border-gray-700', 'prose');
+                messageBubble.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-800', 'prose', 'mr-8');
                 messageBubble.innerHTML = md.render(message);
             } else { 
-                 messageWrapper.classList.add('justify-center');
-                 messageBubble.classList.add('bg-gray-900', 'text-gray-500', 'text-sm', 'italic');
-                 messageBubble.textContent = message;
+                messageWrapper.classList.add('justify-center');
+                messageBubble.classList.add('bg-gray-900/50', 'text-gray-500', 'text-sm', 'italic', 'mx-8');
+                messageBubble.textContent = message;
             }
 
             messageWrapper.appendChild(messageBubble);
             chatContainer.appendChild(messageWrapper);
-            
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            scrollToBottom();
         }
 
+        // Set loading state
         function setLoading(state) {
             isLoading = state;
             sendBtn.disabled = state;
@@ -308,66 +425,223 @@
             surpriseBtn.disabled = state;
             summarizeBtn.disabled = state;
             loadingIndicator.classList.toggle('hidden', !state);
+            
+            if (state) {
+                sendBtn.querySelector('svg').style.display = 'none';
+                sendBtn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
+            } else {
+                sendBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                `;
+            }
         }
 
+        // Handle send message
         async function handleSendMessage() {
             const prompt = chatInput.value.trim();
             if (!prompt || isLoading) return;
+            
+            // Remove placeholder
             document.getElementById('empty-chat-placeholder')?.remove();
+            
+            // Add user message
             appendMessage(prompt, 'user');
+            chatInput.value = '';
+            resizeTextarea();
+            
+            // Show loading
             setLoading(true);
+            
+            // Get AI response
             const aiResponse = await callGeminiAPI(prompt, chatHistory);
+            
+            // Update history
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+            
+            // Add AI message
             appendMessage(aiResponse, 'ai');
+            
+            // Hide loading
             setLoading(false);
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-            chatInput.focus();
+            
+            // Focus input
+            if (!window.visualViewport || window.visualViewport.height === viewportHeight) {
+                chatInput.focus();
+            }
         }
 
+        // Handle surprise me
         async function handleSurpriseMe() {
             if (isLoading) return;
+            
             document.getElementById('empty-chat-placeholder')?.remove();
             setLoading(true);
-            appendMessage("Generating a surprise prompt...", 'system');
-            const prompt = "Suggest one fun and interesting question to ask an AI assistant. Make it creative and unexpected. Respond with only the question itself.";
-            const surpriseQuestion = await callGeminiAPI(prompt);
-            chatInput.value = surpriseQuestion.replace(/"/g, ''); 
-            chatContainer.removeChild(chatContainer.lastChild);
+            
+            const surprisePrompts = [
+                "What's a fascinating fact about the universe that most people don't know?",
+                "Can you explain a complex scientific concept using only kitchen items as examples?",
+                "What would happen if gravity suddenly reversed for 5 seconds?",
+                "Tell me about an unusual job that actually exists",
+                "What's the most mind-blowing paradox you know?",
+                "Explain how a random everyday object would be revolutionary in medieval times",
+                "What's a skill that will be essential in 50 years but doesn't exist today?",
+                "Describe an alien civilization based on octopus intelligence",
+                "What's the weirdest true story from history?",
+                "How would you explain the internet to someone from the 1800s?"
+            ];
+            
+            const randomPrompt = surprisePrompts[Math.floor(Math.random() * surprisePrompts.length)];
+            chatInput.value = randomPrompt;
+            resizeTextarea();
             setLoading(false);
+            
+            // Vibrate on mobile if supported
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+            
             chatInput.focus();
         }
         
+        // Handle summarize
         async function handleSummarize() {
             if (isLoading) return;
+            
             if (chatHistory.length < 2) {
-                appendMessage("There's not enough conversation to summarize yet.", 'system');
+                appendMessage("There's not enough conversation to summarize yet. Let's chat more first!", 'system');
                 return;
             }
+            
             setLoading(true);
-            appendMessage("Generating summary...", 'system');
-            const conversationText = chatHistory.map(entry => `${entry.role === 'model' ? 'AI' : 'You'}: ${entry.parts[0].text}`).join('\n');
-            const prompt = `Please provide a concise, paragraph-style summary of the following conversation:\n\n---\n\n${conversationText}`;
-            const summary = await callGeminiAPI(prompt, []);
+            
+            const conversationText = chatHistory.map(entry => 
+                `${entry.role === 'model' ? 'AI' : 'You'}: ${entry.parts[0].text}`
+            ).join('\n\n');
+            
+            const prompt = `Please provide a concise summary of our conversation so far. Focus on the key points and main topics discussed.`;
+            const summary = await callGeminiAPI(prompt, chatHistory);
+            
+            appendMessage("📝 Conversation Summary:", 'system');
             appendMessage(summary, 'ai');
+            
             setLoading(false);
         }
 
+        // Event listeners
         sendBtn.addEventListener('click', handleSendMessage);
         surpriseBtn.addEventListener('click', handleSurpriseMe);
         summarizeBtn.addEventListener('click', handleSummarize);
+        
+        // Handle Enter key
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage();
             }
         });
-        chatInput.addEventListener('input', () => {
-            chatInput.style.height = 'auto';
-            const maxHeight = 200;
-            const newHeight = Math.min(chatInput.scrollHeight, maxHeight);
-            chatInput.style.height = `${newHeight}px`;
+        
+        // Auto-resize on input
+        chatInput.addEventListener('input', resizeTextarea);
+        
+        // Handle paste
+        chatInput.addEventListener('paste', (e) => {
+            setTimeout(resizeTextarea, 0);
+        });
+        
+        // Focus management for mobile
+        chatInput.addEventListener('focus', () => {
+            // Ensure the input is visible
+            setTimeout(() => {
+                chatInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
+        });
+        
+        // Touch feedback for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            button.addEventListener('touchend', function() {
+                this.style.transform = '';
+            });
+        });
+        
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button after user has used the app for a bit
+            setTimeout(() => {
+                if (deferredPrompt && chatHistory.length > 2) {
+                    const installBanner = document.createElement('div');
+                    installBanner.className = 'fixed top-16 left-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg flex items-center justify-between animate-slide-in-up z-50';
+                    installBanner.innerHTML = `
+                        <div>
+                            <p class="font-semibold">Install MchaT</p>
+                            <p class="text-sm opacity-90">Add to your home screen for the best experience</p>
+                        </div>
+                        <button onclick="installPWA()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold">Install</button>
+                    `;
+                    document.body.appendChild(installBanner);
+                    
+                    // Auto-hide after 10 seconds
+                    setTimeout(() => installBanner.remove(), 10000);
+                }
+            }, 30000); // Show after 30 seconds
+        });
+        
+        // Install PWA function
+        window.installPWA = async function() {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('PWA installed');
+            }
+            
+            deferredPrompt = null;
+            document.querySelector('.fixed.top-16')?.remove();
+        };
+        
+        // Handle offline
+        window.addEventListener('offline', () => {
+            appendMessage("You're offline. Some features may not work properly.", 'system');
+        });
+        
+        window.addEventListener('online', () => {
+            appendMessage("You're back online!", 'system');
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Set initial textarea height
+            resizeTextarea();
+            
+            // Focus input on desktop
+            if (window.innerWidth > 768) {
+                chatInput.focus();
+            }
+            
+            // Check if running as PWA
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('Running as PWA');
+            }
+        });
+        
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', (e) => {
+            if (chatHistory.length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
     </script>
 
