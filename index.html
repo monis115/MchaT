@@ -228,6 +228,18 @@
         const loadingIndicator = document.getElementById('loading-indicator');
         const surpriseBtn = document.getElementById('surprise-btn');
         const summarizeBtn = document.getElementById('summarize-btn');
+        const mainContainer = document.querySelector('.max-w-4xl.mx-auto');
+
+        // --- Mobile keyboard visibility fix ---
+        chatInput.addEventListener('focus', () => {
+            mainContainer.classList.add('pb-[30vh]');
+            setTimeout(() => {
+                chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        });
+        chatInput.addEventListener('blur', () => {
+            mainContainer.classList.remove('pb-[30vh]');
+        });
         
         const md = window.markdownit({ html: true, linkify: true, typographer: true });
 
