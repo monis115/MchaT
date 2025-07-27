@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MchaT - Neural Interface</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/000000/00ff88?text=M">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWNoYVQiLCJzaG9ydF9uYW1lIjoiTWNoYVQiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiIzAwMDAwMCIsImRlc2NyaXB0aW9uIjoiQSBnbGFzc3kgQUkgY2hhdCBhcHBsaWNhdGlvbi4iLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9wbGFjZWhvbGQuY28vMTkyeDE5Mi8wMDAwMDAvMDBmZjg4P3RleHQ9TSIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmcifSx7InNyYyI6Imh0dHBzOi8vcGxhY2Vob2xkLmNvLzUxMng1MTIvMDAwMDAwLzAwZmY4OD90ZXh0PU0iLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Space Grotesk & Orbitron -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Markdown-it library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
+
+    <style>
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff88;
+            --neon-yellow: #ffff00;
+            --neon-purple: #8800ff;
+        }
+
+        html, body {
+            position: fixed;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #000;
+            color: #e5e7eb;
+        }
+        
+        .app-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #000000;
+            overflow: hidden;
+        }
+
+        /* Animated Grid Background */
+        .cyber-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--neon-green);
+            box-shadow: 0 0 6px var(--neon-green);
+            animation: float-up 15s linear infinite;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Glitch Effect */
+        @keyframes glitch {
+            0%, 100% { text-shadow: 
+                0.05em 0 0 rgba(255, 0, 255, 0.75),
+                -0.05em -0.025em 0 rgba(0, 255, 255, 0.75),
+                0.025em 0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+            15% { text-shadow: 
+                0.05em 0 0 rgba(255, 0, 255, 0.75),
+                -0.05em -0.025em 0 rgba(0, 255, 255, 0.75),
+                0.025em 0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+            16% { text-shadow: 
+                -0.05em -0.025em 0 rgba(255, 0, 255, 0.75),
+                0.025em 0.025em 0 rgba(0, 255, 255, 0.75),
+                -0.05em -0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+            49% { text-shadow: 
+                -0.05em -0.025em 0 rgba(255, 0, 255, 0.75),
+                0.025em 0.025em 0 rgba(0, 255, 255, 0.75),
+                -0.05em -0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+            50% { text-shadow: 
+                0.025em 0.05em 0 rgba(255, 0, 255, 0.75),
+                0.05em 0 0 rgba(0, 255, 255, 0.75),
+                0 -0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+            99% { text-shadow: 
+                0.025em 0.05em 0 rgba(255, 0, 255, 0.75),
+                0.05em 0 0 rgba(0, 255, 255, 0.75),
+                0 -0.05em 0 rgba(255, 255, 0, 0.75);
+            }
+        }
+
+        .glitch {
+            animation: glitch 2s infinite;
+        }
+
+        .holographic {
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ff88, #ffff00, #00ffff);
+            background-size: 400% 400%;
+            animation: holographic-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes holographic-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        textarea::-webkit-scrollbar { display: none; }
+        input, textarea, select { font-size: 16px !important; }
+        
+        /* Enhanced Glassmorphism */
+        .cyber-glass {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 255, 0.05));
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 255, 136, 0.2),
+                inset 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .neon-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .neon-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .neon-button:hover::before {
+            left: 100%;
+        }
+
+        .neon-button:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+            transform: translateY(-2px);
+        }
+
+        /* Chat Bubbles */
+        .chat-bubble { 
+            max-width: 85%; 
+            word-wrap: break-word; 
+            min-height: 48px;
+            position: relative;
+        }
+
+        .user-bubble {
+            background: linear-gradient(135deg, rgba(136, 0, 255, 0.3), rgba(255, 0, 255, 0.2));
+            border: 1px solid rgba(136, 0, 255, 0.5);
+            box-shadow: 
+                0 5px 25px rgba(136, 0, 255, 0.3),
+                inset 0 0 20px rgba(136, 0, 255, 0.1);
+        }
+
+        .ai-bubble {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 255, 0.1));
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            box-shadow: 
+                0 5px 25px rgba(0, 255, 136, 0.3),
+                inset 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .ai-bubble::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            background: linear-gradient(45deg, transparent, var(--neon-green), transparent);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            border-radius: inherit;
+        }
+
+        .ai-bubble:hover::before {
+            opacity: 0.5;
+        }
+        
+        /* Enhanced Markdown Styles */
+        .prose { color: #e5e7eb; max-width: none; }
+        .prose code { 
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 255, 0.1));
+            color: var(--neon-green); 
+            padding: 3px 8px; 
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            font-family: 'Space Mono', monospace;
+        }
+        .prose pre { 
+            background: rgba(0, 0, 0, 0.6); 
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.1);
+        }
+        .prose a { color: var(--neon-cyan); text-decoration: none; position: relative; }
+        .prose a:hover { text-shadow: 0 0 10px var(--neon-cyan); }
+
+        /* Enhanced Animations */
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.95);
+                filter: blur(10px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+        .animate-slide-in-up { animation: slideInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+        /* Neural Network Loading Animation */
+                /* Neural Network Loading Animation */
+                .neural-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .neural-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: neural-pulse 1.5s ease-in-out infinite;
+        }
+
+        .neural-dot:nth-child(1) { animation-delay: 0s; }
+        .neural-dot:nth-child(2) { animation-delay: 0.15s; }
+        .neural-dot:nth-child(3) { animation-delay: 0.3s; }
+        .neural-dot:nth-child(4) { animation-delay: 0.45s; }
+
+        @keyframes neural-pulse {
+            0%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green);
+            }
+        }
+
+        /* Typing Cursor with Neon Effect */
+        @keyframes cursor-blink {
+            0%, 49% { 
+                opacity: 1; 
+                box-shadow: 0 0 10px var(--neon-green);
+            }
+            50%, 100% { 
+                opacity: 0; 
+            }
+        }
+
+        .neon-cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1.2em;
+            background: var(--neon-green);
+            margin-left: 2px;
+            animation: cursor-blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        /* Hexagon Pattern Background */
+        .hex-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+            animation: hex-float 20s ease-in-out infinite;
+        }
+
+        @keyframes hex-float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-20px, -20px) rotate(120deg); }
+            66% { transform: translate(20px, -10px) rotate(240deg); }
+        }
+
+        /* Scanning Line Effect */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-green), transparent);
+            animation: scan 8s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Example Prompt Cards */
+        .prompt-card {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 255, 0.05));
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .prompt-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-cyan), var(--neon-purple));
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            border-radius: inherit;
+            filter: blur(10px);
+        }
+
+        .prompt-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--neon-green);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.3);
+        }
+
+        .prompt-card:hover::before {
+            opacity: 0.5;
+        }
+
+        /* Enhanced Input Field */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid transparent;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                linear-gradient(45deg, var(--neon-green), var(--neon-cyan), var(--neon-purple));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .cyber-input:focus {
+            box-shadow: 
+                inset 0 0 30px rgba(0, 255, 136, 0.2),
+                0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        /* Status Indicators */
+        .status-online {
+            width: 8px;
+            height: 8px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-green);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px var(--neon-green); }
+            50% { box-shadow: 0 0 20px var(--neon-green), 0 0 30px var(--neon-green); }
+        }
+
+        /* Matrix Rain Effect */
+        .matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+        }
+
+        .rain-column {
+            position: absolute;
+            top: -100%;
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--neon-green);
+            animation: matrix-fall linear infinite;
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        @keyframes matrix-fall {
+            to { transform: translateY(200vh); }
+        }
+
+    </style>
+</head>
+<body class="overscroll-none">
+
+    <div class="app-container">
+        <!-- Background Effects -->
+        <div class="cyber-grid"></div>
+        <div class="hex-pattern"></div>
+        <div class="scan-line"></div>
+        <div class="matrix-rain" id="matrix-rain"></div>
+        
+        <!-- Floating Particles -->
+        <div id="particles"></div>
+        
+        <header class="flex-shrink-0 flex items-center justify-between px-4 py-3 cyber-glass z-10 border-b border-green-500/30">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="location.reload()">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-green-500 blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                    <div class="relative w-10 h-10 rounded-lg bg-black border-2 border-green-500 flex items-center justify-center font-bold text-green-400 text-xl transform group-hover:rotate-180 transition-transform duration-500" style="font-family: 'Orbitron', sans-serif;">
+                        M
+                    </div>
+                </div>
+                <div>
+                    <span class="font-bold text-2xl holographic tracking-tight" style="font-family: 'Orbitron', sans-serif;">MchaT</span>
+                    <div class="flex items-center gap-2 text-xs text-green-400">
+                        <div class="status-online"></div>
+                        <span>Neural Network Active</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="p-2 rounded-lg hover:bg-green-500/20 transition-all duration-300 relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 text-green-400 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Credits: ∞
+                    </span>
+                </button>
+                <button id="clear-chat-btn" class="p-2 rounded-lg hover:bg-red-500/20 transition-all duration-300 neon-button relative overflow-hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 relative">
+            <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-center p-6 animate-slide-in-up">
+                <div class="relative mb-8">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-cyan-500 blur-3xl opacity-30 animate-pulse"></div>
+                    <h1 class="text-6xl md:text-7xl font-black relative glitch" style="font-family: 'Orbitron', sans-serif;">
+                        <span class="holographic">MchaT</span>
+                    </h1>
+                </div>
+                <p class="text-green-400/80 text-lg mb-2" style="font-family: 'Space Grotesk', sans-serif;">Neural Interface v2.0</p>
+                <p class="text-gray-500 text-sm mb-12">Quantum-Enhanced AI Assistant</p>
+                
+                <div class="grid grid-cols-2 gap-4 w-full max-w-lg mb-8">
+                    <button class="example-prompt prompt-card p-4 rounded-xl text-left group">
+                        <div class="text-green-400 text-xs mb-1 opacity-60">PHYSICS</div>
+                        <div class="text-gray-300 text-sm group-hover:text-green-300 transition-colors">Explain quantum entanglement</div>
+                    </button>
+                    <button class="example-prompt prompt-card p-4 rounded-xl text-left group">
+                        <div class="text-cyan-400 text-xs mb-1 opacity-60">CREATIVE</div>
+                        <div class="text-gray-300 text-sm group-hover:text-cyan-300 transition-colors">Write a cyberpunk haiku</div>
+                    </button>
+                    <button class="example-prompt prompt-card p-4 rounded-xl text-left group">
+                        <div class="text-purple-400 text-xs mb-1 opacity-60">CODING</div>
+                        <div class="text-gray-300 text-sm group-hover:text-purple-300 transition-colors">Build a neural network</div>
+                    </button>
+                    <button class="example-prompt prompt-card p-4 rounded-xl text-left group">
+                        <div class="text-pink-400 text-xs mb-1 opacity-60">ANALYSIS</div>
+                        <div class="text-gray-300 text-sm group-hover:text-pink-300 transition-colors">Future of AI technology</div>
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-4 text-xs text-gray-600">
+                   
+                    <span>•</span>
+                    <span>Created by Monis</span>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="flex-shrink-0 cyber-glass border-t border-green-500/30 pb-safe">
+            <div id="loading-indicator" class="hidden px-4 pt-3 pb-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-green-400">Neural Processing</span>
+                    <div class="neural-loading">
+                        <div class="neural-dot"></div>
+                        <div class="neural-dot"></div>
+                        <div class="neural-dot"></div>
+                        <div class="neural-dot"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative px-3 py-3">
+                <div class="relative cyber-input rounded-2xl transition-all duration-300">
+                    <textarea 
+                        id="chatInput"
+                        rows="1"
+                        class="w-full bg-transparent text-green-100 placeholder-green-600/50 p-4 pr-14 focus:outline-none resize-none overflow-y-auto min-h-[56px] max-h-[150px] rounded-2xl"
+                        placeholder="Initialize neural link..."
+                        enterkeyhint="send"
+                        style="font-family: 'Space Grotesk', sans-serif;"
+                    ></textarea>
+                    
+                    <button id="send-btn" class="absolute right-3 bottom-3 bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-400 hover:to-cyan-400 active:scale-95 transition-all duration-200 p-2.5 rounded-xl flex items-center justify-center disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-50 w-11 h-11 neon-button group">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-black transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                           <line x1="22" y1="2" x2="11" y2="13"></line>
+                           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-center gap-6 mt-2 text-xs text-gray-600">
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-500">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        256-bit Encryption
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-cyan-500">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <span id="response-time">0ms</span> latency
+                    </span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('send-btn');
+        const chatContainer = document.getElementById('chat-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        let emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
+
+        const md = window.markdownit({ html: true, linkify: true, typographer: true, breaks: true });
+
+        let chatHistory = [];
+        let isLoading = false;
+        
+        // --- Gemini API Configuration ---
+        const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        
+        const systemInstruction = {
+            role: "system",
+            parts: [{ text: "You are MchaT, an advanced AI assistant with a futuristic, tech-savvy personality. You're knowledgeable about cutting-edge technology, science, and can engage in creative and analytical discussions. Keep responses concise but informative, with a slight cyberpunk flair when appropriate."}]
+        };
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Create matrix rain effect
+        function createMatrixRain() {
+            const matrixContainer = document.getElementById('matrix-rain');
+            const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 15; i++) {
+                const column = document.createElement('div');
+                column.className = 'rain-column';
+                column.style.left = Math.random() * 100 + '%';
+                column.style.animationDuration = (5 + Math.random() * 10) + 's';
+                column.style.animationDelay = Math.random() * 5 + 's';
+                
+                let text = '';
+                for (let j = 0; j < 30; j++) {
+                    text += characters[Math.floor(Math.random() * characters.length)] + '<br>';
+                }
+                column.innerHTML = text;
+                matrixContainer.appendChild(column);
+            }
+        }
+
+        // Auto-resize textarea
+        function resizeTextarea() {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = `${Math.min(chatInput.scrollHeight, 150)}px`;
+        }
+
+        // Scroll to bottom with smooth animation
+        function scrollToBottom() {
+            setTimeout(() => chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }), 100);
+        }
+
+        // Track response time
+        let apiStartTime;
+        function updateResponseTime(time) {
+            document.getElementById('response-time').textContent = time + 'ms';
+        }
+
+        // Call Gemini API
+        async function callGeminiAPI(prompt, history) {
+            apiStartTime = Date.now();
+            const payload = {
+                contents: [...history, { role: "user", parts: [{ text: prompt }] }],
+                systemInstruction: systemInstruction,
+            };
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseTime = Date.now() - apiStartTime;
+                updateResponseTime(responseTime);
+                
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const result = await response.json();
+                const text = result.candidates[0]?.content?.parts[0]?.text || "Neural link interrupted. Please try again.";
+                return text.replace(/google/gi, 'MchaT');
+            } catch (error) {
+                console.error("API Error:", error);
+                return "⚠️ Neural network error detected. Please recalibrate and try again.";
+            }
+        }
+
+        // Enhanced typing effect with neon cursor
+        function typeWriterEffect(element, text) {
+            const words = text.split(/(\s+)/);
+            let wordIndex = 0;
+            element.innerHTML = '<span class="neon-cursor"></span>';
+
+            const intervalId = setInterval(() => {
+                if (wordIndex < words.length) {
+                    const currentText = words.slice(0, wordIndex + 1).join('');
+                    element.innerHTML = md.render(currentText) + '<span class="neon-cursor"></span>';
+                    wordIndex++;
+                    scrollToBottom();
+                } else {
+                    clearInterval(intervalId);
+                    element.innerHTML = md.render(text);
+                    setLoading(false);
+                    chatInput.focus();
+                }
+            }, 50);
+        }
+
+        // Append message to UI with enhanced styling
+        function appendMessage(message, sender) {
+            const wrapper = document.createElement('div');
+            const bubble = document.createElement('div');
+            wrapper.classList.add('flex', 'animate-slide-in-up');
+            bubble.classList.add('chat-bubble', 'rounded-2xl', 'p-4', 'max-w-full', 'break-words', 'shadow-2xl');
+
+            if (sender === 'user') {
+                wrapper.classList.add('justify-end');
+                bubble.classList.add('user-bubble', 'text-white', 'ml-8');
+                bubble.innerHTML = `
+                    <div class="text-xs text-purple-300 mb-1">You</div>
+                    <div>${message}</div>
+                `;
+                wrapper.appendChild(bubble);
+                chatContainer.appendChild(wrapper);
+                scrollToBottom();
+            } else { // AI
+                wrapper.classList.add('justify-start');
+                bubble.classList.add('ai-bubble', 'prose', 'mr-8');
+                bubble.innerHTML = '<div class="text-xs text-green-300 mb-1">MchaT Neural Network</div><div class="ai-content"></div>';
+                wrapper.appendChild(bubble);
+                chatContainer.appendChild(wrapper);
+                scrollToBottom();
+                
+                const contentDiv = bubble.querySelector('.ai-content');
+                typeWriterEffect(contentDiv, message);
+            }
+        }
+
+        // Set loading state
+        function setLoading(state) {
+            isLoading = state;
+            chatInput.disabled = state;
+            sendBtn.disabled = state;
+            loadingIndicator.classList.toggle('hidden', !state);
+        }
+
+        // Handle sending a message
+        async function handleSendMessage(promptOverride = null) {
+            const prompt = promptOverride || chatInput.value.trim();
+            if (!prompt || isLoading) return;
+            
+            if (emptyChatPlaceholder) {
+                emptyChatPlaceholder.style.transition = 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+                emptyChatPlaceholder.style.opacity = '0';
+                emptyChatPlaceholder.style.transform = 'scale(0.9)';
+                emptyChatPlaceholder.style.filter = 'blur(10px)';
+                setTimeout(() => {
+                    if (emptyChatPlaceholder) emptyChatPlaceholder.remove();
+                    emptyChatPlaceholder = null;
+                }, 500);
+            }
+            
+            appendMessage(prompt, 'user');
+            if (!promptOverride) {
+                chatInput.value = '';
+                resizeTextarea();
+            }
+            setLoading(true);
+            const aiResponse = await callGeminiAPI(prompt, chatHistory);
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+            
+            appendMessage(aiResponse, 'ai');
+        }
+
+        // --- Event Listeners ---
+        sendBtn.addEventListener('click', () => handleSendMessage());
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+        chatInput.addEventListener('input', resizeTextarea);
+        
+        clearChatBtn.addEventListener('click', () => {
+            if (chatHistory.length > 0) {
+                // Create a glitch effect before clearing
+                document.body.classList.add('glitch');
+                setTimeout(() => {
+                    if (confirm('⚠️ Warning: This will erase all neural memory. Proceed?')) {
+                        location.reload();
+                    } else {
+                        document.body.classList.remove('glitch');
+                    }
+                }, 100);
+            }
+        });
+
+        // Handle example prompts
+        document.querySelectorAll('.example-prompt').forEach(button => {
+            button.addEventListener('click', () => {
+                const promptText = button.querySelector('.text-sm').textContent;
+                handleSendMessage(promptText);
+            });
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Cmd/Ctrl + K to focus input
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                chatInput.focus();
+            }
+            // Cmd/Ctrl + / to clear chat
+            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+                e.preventDefault();
+                clearChatBtn.click();
+            }
+        });
+
+        // Add hover sound effects (optional - requires adding audio files)
+        function addHoverEffects() {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    button.style.transform = 'scale(1.05)';
+                });
+                button.addEventListener('mouseleave', () => {
+                    button.style.transform = 'scale(1)';
+                });
+            });
+        }
+
+        // Enhanced focus effects for input
+        chatInput.addEventListener('focus', () => {
+            document.querySelector('.cyber-input').style.boxShadow = 
+                'inset 0 0 30px rgba(0, 255, 136, 0.3), 0 0 50px rgba(0, 255, 136, 0.4)';
+        });
+
+        chatInput.addEventListener('blur', () => {
+            document.querySelector('.cyber-input').style.boxShadow = 
+                'inset 0 0 20px rgba(0, 255, 136, 0.1)';
+        });
+
+        // Add pulse effect to send button when text is entered
+        chatInput.addEventListener('input', () => {
+            if (chatInput.value.trim()) {
+                sendBtn.classList.add('animate-pulse');
+            } else {
+                sendBtn.classList.remove('animate-pulse');
+            }
+        });
+
+        // Create a typing indicator animation
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'flex items-center gap-2 text-green-400 text-sm p-4';
+            indicator.innerHTML = `
+                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>MchaT is processing neural pathways...</span>
+            `;
+            return indicator;
+        }
+
+        // Add message timestamp
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+        }
+
+        // Initialize visual effects on load
+        window.addEventListener('load', () => {
+            createParticles();
+            createMatrixRain();
+            addHoverEffects();
+            resizeTextarea();
+            
+            // Show welcome animation
+            setTimeout(() => {
+                const title = document.querySelector('.glitch');
+                if (title) {
+                    title.style.animation = 'glitch 2s infinite';
+                }
+            }, 1000);
+
+            // Focus input on desktop
+            if (window.innerWidth > 768) {
+                chatInput.focus();
+            }
+
+            // Add initial response time
+            updateResponseTime(0);
+        });
+
+        // PWA installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show custom install button (you can add this to your UI)
+            const installBtn = document.createElement('button');
+            installBtn.className = 'fixed bottom-20 right-4 bg-gradient-to-r from-green-500 to-cyan-500 text-black px-4 py-2 rounded-lg shadow-lg hover:shadow-green-500/50 transition-all duration-300';
+            installBtn.innerHTML = '⬇ Install MchaT';
+            installBtn.onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installBtn.remove();
+                    }
+                    deferredPrompt = null;
+                }
+            };
+            document.body.appendChild(installBtn);
+        });
+
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript,' + encodeURIComponent(`
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+                self.addEventListener('fetch', e => {
+                    if (e.request.mode === 'navigate') {
+                        e.respondWith(fetch(e.request).catch(() => 
+                            new Response('<h1>Offline</h1>', { headers: { 'Content-Type': 'text/html' }})
+                        ));
+                    }
+                });
+            `));
+        }
+
+        // Add random glitch effect occasionally
+        setInterval(() => {
+            if (Math.random() > 0.95) {
+                const elements = document.querySelectorAll('.holographic');
+                elements.forEach(el => {
+                    el.style.animation = 'none';
+                    setTimeout(() => {
+                        el.style.animation = 'holographic-shift 3s ease infinite';
+                    }, 100);
+                });
+            }
+        }, 5000);
+
+        // Console Easter Egg
+        console.log('%c Welcome to MchaT Neural Interface ', 
+            'background: linear-gradient(45deg, #00ff88, #00ffff); color: black; font-size: 20px; font-weight: bold; padding: 10px;');
+        console.log('%c Created by Monis ', 
+            'color: #00ff88; font-size: 14px; padding: 5px;');
+    </script>
+
+</body>
+</html>
