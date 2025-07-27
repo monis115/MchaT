@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MchaT</title>
+    <title>MchaT </title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/000000/ffffff?text=M">
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWNoYVQgLSBHZW1pbmkgQ2hhdCIsInNob3J0X25hbWUiOiJNY2hhVCIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDAwMDAwIiwidGhlbWVfY29sb3IiOiIjMDAwMDAwIiwiZGVzY3JpcHRpb24iOiJBIG1vZGVybiBjaGF0IGFwcGxpY2F0aW9uIHBvd2VyZWQgYnkgR2VtaW5pLiIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3BsYWNlaG9sZC5jby8xOTJ4MTkyLzAwMDAwMC9mZmZmZmY/dGV4dD1NIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9LHsic3JjIjoiaHR0cHM6Ly9wbGFjZWhvbGQuY28vNTEyeDUxMi8wMDAwMDAvZmZmZmZmP3RleHQ9TSIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWNoQVQiLCJzaG9ydF9uYW1lIjoiTWNoQVQiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiIzAwMDAwMCIsImRlc2NyaXB0aW9uIjoiQSBsdXhlIEFJIGNoYXQgYXBwbGljYXRpb24uIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vcGxhY2Vob2xkLmNvLzE5MngxOTIvMDAwMDAwL2ZmZmZmZj90ZXh0PU0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
 
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,29 +18,25 @@
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Markdown-it library to render markdown from API -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
 
     <style>
-        /* Prevent iOS Safari bounce effect */
         html, body {
             position: fixed;
             overflow: hidden;
             width: 100%;
             height: 100%;
-            -webkit-overflow-scrolling: touch;
         }
         
-        /* Custom styles to apply the Inter font */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            background-color: #000;
+            color: #f3f4f6;
         }
         
-        /* Main app container */
         .app-container {
             position: fixed;
             top: 0;
@@ -49,188 +45,122 @@
             bottom: 0;
             display: flex;
             flex-direction: column;
+            background-color: #000;
         }
         
-        /* Hide scrollbar for the textarea but allow scrolling */
-        textarea::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
-        }
+        textarea::-webkit-scrollbar { display: none; }
+        input, textarea, select { font-size: 16px !important; }
         
-        /* Prevent zoom on input focus on iOS */
-        input, textarea, select {
-            font-size: 16px !important;
+        /* Aurora Background */
+        .aurora-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top, #4338ca, transparent),
+                        radial-gradient(ellipse at bottom, #be185d, transparent);
+            background-size: 200% 200%;
+            animation: aurora 15s ease infinite;
+            opacity: 0.15;
+            z-index: 0;
         }
-        
-        /* Styles for chat bubbles */
-        .chat-bubble {
-            max-width: 85%;
-            word-wrap: break-word;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Better touch targets for mobile */
-        button {
-            min-height: 44px;
-            min-width: 44px;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Styles for markdown-rendered content */
-        .prose { color: inherit; max-width: none; }
-        .prose h1, .prose h2, .prose h3 { margin-top: 0.75em; margin-bottom: 0.5em; line-height: 1.2; }
-        .prose p { margin-bottom: 0.75em; }
-        .prose ul, .prose ol { margin-left: 1.5em; margin-bottom: 0.75em; }
-        .prose pre { 
-            white-space: pre-wrap; 
-            background-color: rgba(255,255,255,0.05); 
-            padding: 1rem; 
-            border-radius: 0.5rem; 
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .prose code { 
-            font-family: 'SF Mono', Monaco, Consolas, monospace; 
-            background-color: rgba(255,255,255,0.1); 
-            padding: 2px 5px; 
-            border-radius: 4px; 
-            font-size: 0.875em;
-        }
-        .prose a { color: #60a5fa; text-decoration: underline; }
-        .prose strong { color: inherit; font-weight: 600; }
 
-        /* Animation for new messages */
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-content {
+            z-index: 1;
+        }
+        
+        /* Glassy Header/Footer */
+        .glassy {
+            background-color: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-color: rgba(255, 255, 255, 0.07);
+        }
+        
+        .chat-bubble { max-width: 85%; word-wrap: break-word; min-height: 48px; }
+        
+        /* Markdown Styles */
+        .prose { color: inherit; max-width: none; }
+        .prose code { background-color: rgba(255,255,255,0.1); color: #fff; padding: 3px 6px; border-radius: 4px; }
+        .prose pre { background-color: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .prose a { color: #a5b4fc; text-decoration: underline; }
+
+        /* Animations */
         @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px) scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1.0); }
         }
-        .animate-slide-in-up {
-            animation: slideInUp 0.3s ease-out forwards;
-        }
+        .animate-slide-in-up { animation: slideInUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
         
-        /* Safe area handling for modern phones */
-        .safe-bottom {
-            padding-bottom: env(safe-area-inset-bottom, 0);
-        }
-        
-        /* Virtual keyboard handling */
-        .keyboard-open {
-            height: calc(100vh - var(--keyboard-height, 0px));
-        }
-        
-        /* Smooth scrolling for chat */
-        .smooth-scroll {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* Loading dots animation */
-        @keyframes blink {
-            0%, 80%, 100% { opacity: 0; }
-            40% { opacity: 1; }
-        }
-        .loading-dot {
-            animation: blink 1.4s infinite;
-        }
+        @keyframes loading-blink { 50% { opacity: 0.3; } }
+        .loading-dot { animation: loading-blink 1.2s infinite steps(1, start); }
         .loading-dot:nth-child(2) { animation-delay: 0.2s; }
         .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes cursor-blink { 50% { opacity: 0; } }
+        .blinking-cursor { animation: cursor-blink 1s step-end infinite; }
+
     </style>
 </head>
-<body class="bg-black text-gray-300 overscroll-none">
+<body class="overscroll-none">
 
-    <!-- Main app container -->
     <div class="app-container">
         
-        <!-- Header Section -->
-        <header class="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-800/50 backdrop-blur-xl bg-black/80">
-            <!-- Logo -->
-            <div class="flex items-center gap-2 cursor-pointer" onclick="location.reload()">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logo-gradient" x1="4" y1="6" x2="20" y2="18" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#3B82F6"/>
-                            <stop offset="1" stop-color="#8B5CF6"/>
-                        </linearGradient>
-                    </defs>
-                    <path d="M4 18L9 12L12 15L15 12L20 18" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M4 12L9 6L12 9L15 6L20 12" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="font-bold text-lg text-white tracking-tight">MchaT</span>
+        <header class="flex-shrink-0 flex items-center justify-between px-4 py-3 glassy z-10 border-b">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">M</div>
+                <span class="font-bold text-xl text-white tracking-tight">MchaT</span>
             </div>
-            
-            <!-- Menu button (for future features) -->
-            <button class="p-2 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="12" cy="5" r="1"/>
-                    <circle cx="12" cy="19" r="1"/>
-                </svg>
+            <button id="clear-chat-btn" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
             </button>
         </header>
 
-        <!-- Chat messages container -->
-        <main id="chat-container" class="flex-1 overflow-y-auto smooth-scroll p-4 space-y-3">
-            <!-- Placeholder for when the chat is empty -->
-            <div id="empty-chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-600 px-6 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 mb-4">
-                    <path d="M12 8V4H8"/>
-                    <rect x="2" y="6" width="20" height="12" rx="2"/>
-                    <path d="M12 16v-4"/>
-                    <path d="M8 12h8"/>
-                </svg>
-                <h2 class="text-xl font-semibold text-gray-400 mb-2">Welcome to MchaT</h2>
-                <p class="text-base text-gray-500">Ask me anything to get started</p>
-                <p class="text-base text-gray-500">Created By Monis</p>
+        <main id="chat-container" class="relative flex-1 overflow-y-auto p-4 space-y-4 main-content">
+            <div class="aurora-bg"></div>
+            <div id="empty-chat-placeholder" class="relative z-10 flex flex-col items-center justify-center h-full text-center p-6 animate-slide-in-up">
+                 <h1 class="text-6xl font-extrabold text-white mb-3 tracking-tighter">MchaT </h1>
+                 <p class="text-gray-300 text-lg mb-10">Your personal AI assistant.</p>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                     <button class="example-prompt">Explain quantum physics</button>
+                     <button class="example-prompt">Write a song about space</button>
+                     <button class="example-prompt">How do I make sushi?</button>
+                     <button class="example-prompt">Plan a trip to Italy</button>
+                 </div>
+                 <p class="text-gray-500 text-xs mt-12 absolute bottom-10">Created by Monis</p>
             </div>
         </main>
         
-        <!-- Bottom section with input -->
-        <footer class="flex-shrink-0 border-t border-gray-800/50 bg-black/95 backdrop-blur-xl safe-bottom">
-            <!-- Loading Indicator -->
-            <div id="loading-indicator" class="hidden px-4 py-3">
-                <div class="flex items-center space-x-1 text-gray-500">
-                    <span class="text-sm">AI is thinking</span>
-                    <span class="loading-dot">•</span>
-                    <span class="loading-dot">•</span>
-                    <span class="loading-dot">•</span>
+        <footer class="flex-shrink-0 glassy border-t pb-safe main-content">
+            <div id="loading-indicator" class="hidden px-4 pt-2 pb-1">
+                <div class="flex items-center space-x-1">
+                    <span class="text-sm text-gray-400">MchaT is thinking</span>
+                    <div class="loading-dot">.</div>
+                    <div class="loading-dot">.</div>
+                    <div class="loading-dot">.</div>
                 </div>
             </div>
 
-            <!-- Action buttons container -->
-            <div class="flex gap-2 px-4 py-2">
-                <button id="surprise-btn" class="flex-1 bg-gray-900/50 hover:bg-gray-900/80 active:scale-95 transition-all text-sm text-gray-300 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 border border-gray-800">
-                    <span>✨</span>
-                    <span class="font-medium">Surprise Me</span>
-                </button>
-                <button id="summarize-btn" class="flex-1 bg-gray-900/50 hover:bg-gray-900/80 active:scale-95 transition-all text-sm text-gray-300 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 border border-gray-800">
-                    <span>📝</span>
-                    <span class="font-medium">Summarize</span>
-                </button>
-            </div>
-
-            <!-- Input container -->
-            <div class="relative px-4 pb-4">
-                <div class="relative bg-gray-900/70 border border-gray-800 rounded-2xl shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-                    <!-- Textarea for user input -->
+            <div class="relative px-3 py-3">
+                <div class="relative bg-black/50 border border-white/10 rounded-xl shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-indigo-500/50">
                     <textarea 
                         id="chatInput"
                         rows="1"
-                        class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 pr-14 focus:outline-none resize-none overflow-y-auto min-h-[52px] max-h-[120px] rounded-2xl"
-                        placeholder="Ask anything..."
+                        class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 pr-14 focus:outline-none resize-none overflow-y-auto min-h-[52px] max-h-[150px] rounded-xl"
+                        placeholder="Message MchaT..."
                         enterkeyhint="send"
                     ></textarea>
                     
-                    <!-- Send button -->
-                    <button id="send-btn" class="absolute right-2 bottom-2 bg-blue-600 hover:bg-blue-700 active:scale-90 transition-all duration-200 p-2.5 rounded-xl flex items-center justify-center disabled:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100 w-10 h-10">
+                    <button id="send-btn" class="absolute right-2.5 bottom-2.5 bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:opacity-90 active:scale-95 transition-all duration-200 p-2.5 rounded-lg flex items-center justify-center disabled:bg-gray-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-50 w-10 h-10">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                           <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </button>
                 </div>
@@ -239,410 +169,164 @@
     </div>
 
     <script>
-        // --- PWA (Progressive Web App) Implementation ---
-        if ('serviceWorker' in navigator) {
-            // Create service worker content
-            const swContent = `
-                const CACHE_NAME = 'mchat-v2';
-                const urlsToCache = [
-                    '/',
-                    'https://cdn.tailwindcss.com',
-                    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-                    'https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js',
-                    'https://placehold.co/192x192/000000/ffffff?text=M',
-                    'https://placehold.co/512x512/000000/ffffff?text=M'
-                ];
-
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then(cache => cache.addAll(urlsToCache))
-                    );
-                });
-
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then(response => response || fetch(event.request))
-                    );
-                });
-
-                self.addEventListener('activate', event => {
-                    event.waitUntil(
-                        caches.keys().then(cacheNames => {
-                            return Promise.all(
-                                cacheNames.filter(cacheName => cacheName !== CACHE_NAME)
-                                    .map(cacheName => caches.delete(cacheName))
-                            );
-                        })
-                    );
-                });
-            `;
-            
-            const blob = new Blob([swContent], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swUrl).then(reg => {
-                console.log('Service Worker registered');
-            }).catch(err => {
-                console.error('Service Worker registration failed:', err);
-            });
-        }
-
-        // --- Mobile Keyboard Height Detection ---
-        let keyboardHeight = 0;
-        let viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-        
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                const currentHeight = window.visualViewport.height;
-                keyboardHeight = viewportHeight - currentHeight;
-                document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
-                
-                // Adjust container when keyboard is shown
-                if (keyboardHeight > 50) {
-                    document.querySelector('.app-container').classList.add('keyboard-open');
-                    scrollToBottom();
-                } else {
-                    document.querySelector('.app-container').classList.remove('keyboard-open');
-                }
-            });
-        }
-
-        // --- Application Code ---
+        // --- DOM Element References ---
         const chatInput = document.getElementById('chatInput');
         const sendBtn = document.getElementById('send-btn');
         const chatContainer = document.getElementById('chat-container');
         const loadingIndicator = document.getElementById('loading-indicator');
-        const surpriseBtn = document.getElementById('surprise-btn');
-        const summarizeBtn = document.getElementById('summarize-btn');
-        
-        const md = window.markdownit({ 
-            html: true, 
-            linkify: true, 
-            typographer: true,
-            breaks: true 
-        });
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        let emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
+
+        const md = window.markdownit({ html: true, linkify: true, typographer: true, breaks: true });
 
         let chatHistory = [];
         let isLoading = false;
-        let touchStartY = 0;
-
+        
+        // --- Gemini API Configuration ---
         const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
         
         const systemInstruction = {
             role: "system",
-            parts: [{ text: "You are a friendly and helpful assistant. Provide answers in a conversational, paragraph-based format. Keep responses concise and mobile-friendly. Avoid using markdown lists with asterisks unless essential for clarity. Be natural and engaging."}]
+            parts: [{ text: "You are MchaT, a helpful AI assistant. Your personality is clear, concise, and friendly. Provide answers directly without unnecessary fluff. Keep responses mobile-friendly."}]
         };
 
-        // Prevent pull-to-refresh on mobile
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1) return;
-            touchStartY = e.touches[0].clientY;
-        });
+        // --- Core Functions ---
 
-        document.addEventListener('touchmove', (e) => {
-            const touchY = e.touches[0].clientY;
-            const scrollTop = chatContainer.scrollTop;
-            
-            if (scrollTop === 0 && touchY > touchStartY) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        // Auto-resize textarea
         function resizeTextarea() {
             chatInput.style.height = 'auto';
-            chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+            chatInput.style.height = `${Math.min(chatInput.scrollHeight, 150)}px`;
         }
 
-        // Smooth scroll to bottom
         function scrollToBottom() {
-            setTimeout(() => {
-                chatContainer.scrollTo({
-                    top: chatContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+            setTimeout(() => chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }), 100);
         }
 
-        // API call function
-        async function callGeminiAPI(prompt, history = []) {
+        async function callGeminiAPI(prompt, history) {
             const payload = {
                 contents: [...history, { role: "user", parts: [{ text: prompt }] }],
-                systemInstruction: systemInstruction
+                systemInstruction: systemInstruction,
             };
-            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
-                if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-                
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 const result = await response.json();
-                return result.candidates[0].content.parts[0].text;
+                const text = result.candidates[0]?.content?.parts[0]?.text || "Sorry, I had trouble responding.";
+                return text.replace(/google/gi, 'MchaT');
             } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                return `I apologize, but I encountered an error. Please try again.`;
+                console.error("API Error:", error);
+                return "My apologies, I've encountered an error. Please try again.";
             }
         }
 
-        // Append message to chat
+        function typeWriterEffect(element, text) {
+            const words = text.split(/(\s+)/);
+            let wordIndex = 0;
+            element.innerHTML = '<span class="blinking-cursor">▋</span>';
+            const interval = 50; // ms per word
+
+            const type = () => {
+                if (wordIndex < words.length) {
+                    const currentText = words.slice(0, wordIndex + 1).join('');
+                    element.innerHTML = md.render(currentText) + '<span class="blinking-cursor">▋</span>';
+                    wordIndex++;
+                    scrollToBottom();
+                    setTimeout(type, interval);
+                } else {
+                    element.innerHTML = md.render(text);
+                    setLoading(false);
+                    if(window.innerWidth > 768) chatInput.focus();
+                }
+            };
+            type();
+        }
+
         function appendMessage(message, sender) {
-            const messageWrapper = document.createElement('div');
-            const messageBubble = document.createElement('div');
-            
-            messageWrapper.classList.add('flex', 'animate-slide-in-up');
-            messageBubble.classList.add('chat-bubble', 'rounded-2xl', 'p-4', 'max-w-full', 'break-words');
+            const wrapper = document.createElement('div');
+            const bubble = document.createElement('div');
+            wrapper.classList.add('flex', 'animate-slide-in-up', 'relative', 'z-10');
+            bubble.classList.add('chat-bubble', 'rounded-xl', 'p-4', 'max-w-full', 'break-words', 'shadow-lg');
 
             if (sender === 'user') {
-                messageWrapper.classList.add('justify-end');
-                messageBubble.classList.add('bg-white', 'text-black', 'ml-8');
-                messageBubble.textContent = message;
-            } else if (sender === 'ai') {
-                messageWrapper.classList.add('justify-start');
-                messageBubble.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-800', 'prose', 'mr-8');
-                messageBubble.innerHTML = md.render(message);
-            } else { 
-                messageWrapper.classList.add('justify-center');
-                messageBubble.classList.add('bg-gray-900/50', 'text-gray-500', 'text-sm', 'italic', 'mx-8');
-                messageBubble.textContent = message;
+                wrapper.classList.add('justify-end');
+                bubble.classList.add('bg-white', 'text-black', 'ml-8');
+                bubble.textContent = message;
+            } else { // AI
+                wrapper.classList.add('justify-start');
+                bubble.classList.add('bg-black/40', 'border', 'border-white/10', 'prose', 'mr-8');
             }
-
-            messageWrapper.appendChild(messageBubble);
-            chatContainer.appendChild(messageWrapper);
+            wrapper.appendChild(bubble);
+            chatContainer.appendChild(wrapper);
             scrollToBottom();
+            
+            if (sender === 'ai') {
+                typeWriterEffect(bubble, message);
+            }
         }
 
-        // Set loading state
         function setLoading(state) {
             isLoading = state;
-            sendBtn.disabled = state;
             chatInput.disabled = state;
-            surpriseBtn.disabled = state;
-            summarizeBtn.disabled = state;
+            sendBtn.disabled = state;
             loadingIndicator.classList.toggle('hidden', !state);
-            
-            if (state) {
-                sendBtn.querySelector('svg').style.display = 'none';
-                sendBtn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>';
-            } else {
-                sendBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                `;
-            }
         }
 
-        // Handle send message
-        async function handleSendMessage() {
-            const prompt = chatInput.value.trim();
+        async function handleSendMessage(promptOverride = null) {
+            const prompt = promptOverride || chatInput.value.trim();
             if (!prompt || isLoading) return;
             
-            // Remove placeholder
-            document.getElementById('empty-chat-placeholder')?.remove();
+            if (emptyChatPlaceholder) {
+                emptyChatPlaceholder.style.transition = 'opacity 0.3s ease';
+                emptyChatPlaceholder.style.opacity = '0';
+                setTimeout(() => {
+                    if (emptyChatPlaceholder) emptyChatPlaceholder.remove();
+                    emptyChatPlaceholder = null;
+                }, 300);
+            }
             
-            // Add user message
             appendMessage(prompt, 'user');
-            chatInput.value = '';
-            resizeTextarea();
-            
-            // Show loading
+            if (!promptOverride) {
+                chatInput.value = '';
+                resizeTextarea();
+            }
             setLoading(true);
-            
-            // Get AI response
+
             const aiResponse = await callGeminiAPI(prompt, chatHistory);
-            
-            // Update history
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
             
-            // Add AI message
             appendMessage(aiResponse, 'ai');
-            
-            // Hide loading
-            setLoading(false);
-            
-            // Focus input
-            if (!window.visualViewport || window.visualViewport.height === viewportHeight) {
-                chatInput.focus();
-            }
         }
 
-        // Handle surprise me
-        async function handleSurpriseMe() {
-            if (isLoading) return;
-            
-            document.getElementById('empty-chat-placeholder')?.remove();
-            setLoading(true);
-            
-            const surprisePrompts = [
-                "What's a fascinating fact about the universe that most people don't know?",
-                "Can you explain a complex scientific concept using only kitchen items as examples?",
-                "What would happen if gravity suddenly reversed for 5 seconds?",
-                "Tell me about an unusual job that actually exists",
-                "What's the most mind-blowing paradox you know?",
-                "Explain how a random everyday object would be revolutionary in medieval times",
-                "What's a skill that will be essential in 50 years but doesn't exist today?",
-                "Describe an alien civilization based on octopus intelligence",
-                "What's the weirdest true story from history?",
-                "How would you explain the internet to someone from the 1800s?"
-            ];
-            
-            const randomPrompt = surprisePrompts[Math.floor(Math.random() * surprisePrompts.length)];
-            chatInput.value = randomPrompt;
-            resizeTextarea();
-            setLoading(false);
-            
-            // Vibrate on mobile if supported
-            if ('vibrate' in navigator) {
-                navigator.vibrate(50);
-            }
-            
-            chatInput.focus();
-        }
-        
-        // Handle summarize
-        async function handleSummarize() {
-            if (isLoading) return;
-            
-            if (chatHistory.length < 2) {
-                appendMessage("There's not enough conversation to summarize yet. Let's chat more first!", 'system');
-                return;
-            }
-            
-            setLoading(true);
-            
-            const conversationText = chatHistory.map(entry => 
-                `${entry.role === 'model' ? 'AI' : 'You'}: ${entry.parts[0].text}`
-            ).join('\n\n');
-            
-            const prompt = `Please provide a concise summary of our conversation so far. Focus on the key points and main topics discussed.`;
-            const summary = await callGeminiAPI(prompt, chatHistory);
-            
-            appendMessage("📝 Conversation Summary:", 'system');
-            appendMessage(summary, 'ai');
-            
-            setLoading(false);
-        }
-
-        // Event listeners
-        sendBtn.addEventListener('click', handleSendMessage);
-        surpriseBtn.addEventListener('click', handleSurpriseMe);
-        summarizeBtn.addEventListener('click', handleSummarize);
-        
-        // Handle Enter key
+        // --- Event Listeners ---
+        sendBtn.addEventListener('click', () => handleSendMessage());
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage();
             }
         });
-        
-        // Auto-resize on input
         chatInput.addEventListener('input', resizeTextarea);
-        
-        // Handle paste
-        chatInput.addEventListener('paste', (e) => {
-            setTimeout(resizeTextarea, 0);
-        });
-        
-        // Focus management for mobile
-        chatInput.addEventListener('focus', () => {
-            // Ensure the input is visible
-            setTimeout(() => {
-                chatInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 300);
-        });
-        
-        // Touch feedback for buttons
-        document.querySelectorAll('button').forEach(button => {
-            button.addEventListener('touchstart', function() {
-                this.style.transform = 'scale(0.95)';
-            });
-            button.addEventListener('touchend', function() {
-                this.style.transform = '';
-            });
-        });
-        
-        // Install prompt for PWA
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show install button after user has used the app for a bit
-            setTimeout(() => {
-                if (deferredPrompt && chatHistory.length > 2) {
-                    const installBanner = document.createElement('div');
-                    installBanner.className = 'fixed top-16 left-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-lg flex items-center justify-between animate-slide-in-up z-50';
-                    installBanner.innerHTML = `
-                        <div>
-                            <p class="font-semibold">Install MchaT</p>
-                            <p class="text-sm opacity-90">Add to your home screen for the best experience</p>
-                        </div>
-                        <button onclick="installPWA()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold">Install</button>
-                    `;
-                    document.body.appendChild(installBanner);
-                    
-                    // Auto-hide after 10 seconds
-                    setTimeout(() => installBanner.remove(), 10000);
-                }
-            }, 30000); // Show after 30 seconds
-        });
-        
-        // Install PWA function
-        window.installPWA = async function() {
-            if (!deferredPrompt) return;
-            
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            
-            if (outcome === 'accepted') {
-                console.log('PWA installed');
+        clearChatBtn.addEventListener('click', () => {
+            if (chatHistory.length > 0 && confirm('Are you sure you want to clear this chat?')) {
+                location.reload();
+            } else if (chatHistory.length === 0) {
+                 location.reload();
             }
-            
-            deferredPrompt = null;
-            document.querySelector('.fixed.top-16')?.remove();
-        };
-        
-        // Handle offline
-        window.addEventListener('offline', () => {
-            appendMessage("You're offline. Some features may not work properly.", 'system');
+        });
+        document.querySelectorAll('.example-prompt').forEach(button => {
+            button.classList.add('bg-white/5', 'border', 'border-white/10', 'p-3', 'rounded-lg', 'text-sm', 'text-gray-300', 'text-center', 'hover:bg-white/10', 'hover:border-white/20', 'transition-colors', 'duration-200', 'backdrop-blur-sm', 'whitespace-nowrap');
+            button.addEventListener('click', () => handleSendMessage(button.textContent));
         });
         
-        window.addEventListener('online', () => {
-            appendMessage("You're back online!", 'system');
-        });
-        
-        // Initialize on load
+        // --- Initialization ---
         window.addEventListener('load', () => {
-            // Set initial textarea height
             resizeTextarea();
-            
-            // Focus input on desktop
-            if (window.innerWidth > 768) {
-                chatInput.focus();
-            }
-            
-            // Check if running as PWA
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-                console.log('Running as PWA');
-            }
-        });
-        
-        // Prevent accidental navigation
-        window.addEventListener('beforeunload', (e) => {
-            if (chatHistory.length > 0) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
+            if (window.innerWidth > 768) chatInput.focus();
         });
     </script>
 
