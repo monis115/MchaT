@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport meta tag is crucial for mobile-friendliness -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MchaT </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MchaT</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000"/>
@@ -25,44 +24,88 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
 
     <style>
-        /* Base styles for a clean, mobile-first experience */
-        html {
-            height: 100%;
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --keyboard-height: 0px;
         }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #000;
             color: #f3f4f6;
-            margin: 0;
-            height: 100%;
-            overflow: hidden; /* Prevents double scrollbars */
+            position: fixed;
+            width: 100%;
+            touch-action: pan-y;
         }
         
-        /* App container uses dynamic viewport height for keyboard awareness */
+        /* Main app container with proper mobile viewport handling */
         .app-container {
-            height: 100vh; /* Fallback for older browsers */
-            height: 100dvh; /* Dynamic viewport height */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
             background-color: #000;
+            height: 100vh;
+            height: -webkit-fill-available;
         }
         
-        /* Hide scrollbars on textarea */
+        /* Prevent text selection on UI elements */
+        header, footer {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Better scrollbar handling */
+        .scrollable {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        
         textarea::-webkit-scrollbar { display: none; }
         
-        /* Ensures font size is large enough to prevent iOS auto-zoom on focus */
-        input, textarea, select { font-size: 16px !important; }
+        /* Ensure proper font size on mobile */
+        input, textarea, select { 
+            font-size: 16px !important;
+            -webkit-appearance: none;
+            appearance: none;
+        }
         
-        /* Aurora Background Effect */
+        /* Prevent zoom on input focus */
+        input:focus, textarea:focus, select:focus {
+            font-size: 16px !important;
+        }
+        
+        /* Aurora Background */
         .aurora-bg {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: radial-gradient(ellipse at top, #4338ca, transparent),
                         radial-gradient(ellipse at bottom, #be185d, transparent);
             background-size: 200% 200%;
             animation: aurora 15s ease infinite;
             opacity: 0.15;
             z-index: 0;
+            pointer-events: none;
         }
 
         @keyframes aurora {
@@ -70,33 +113,91 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
-        .main-content {
-            z-index: 1; /* Keep main content above the aurora background */
+        
+        /* Header with safe area handling */
+        .app-header {
+            flex-shrink: 0;
+            padding-top: var(--safe-area-inset-top);
+            background-color: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            z-index: 100;
+            position: relative;
         }
         
-        /* Glassmorphism effect for header/footer */
-        .glassy {
-            background-color: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-color: rgba(255, 255, 255, 0.07);
+        /* Chat area that adjusts to keyboard */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            position: relative;
         }
         
-        .chat-bubble { max-width: 85%; word-wrap: break-word; min-height: 48px; }
+        /* Input area that stays above keyboard */
+        .input-area {
+            flex-shrink: 0;
+            background-color: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            padding-bottom: var(--safe-area-inset-bottom);
+            z-index: 100;
+            transform: translateZ(0);
+            will-change: transform;
+            transition: transform 0.3s ease;
+        }
         
-        /* Custom Markdown Styles */
-        .prose { color: inherit; max-width: none; }
-        .prose code { background-color: rgba(255,255,255,0.1); color: #fff; padding: 3px 6px; border-radius: 4px; }
-        .prose pre { background-color: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        /* Chat bubbles with better mobile styling */
+        .chat-bubble { 
+            max-width: 85%; 
+            word-wrap: break-word; 
+            min-height: 44px;
+            -webkit-touch-callout: text;
+            user-select: text;
+        }
+        
+        /* Markdown Styles */
+        .prose { 
+            color: inherit; 
+            max-width: none;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .prose code { 
+            background-color: rgba(255,255,255,0.1); 
+            color: #fff; 
+            padding: 2px 6px; 
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .prose pre { 
+            background-color: rgba(0,0,0,0.3); 
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .prose a { color: #a5b4fc; text-decoration: underline; }
 
-        /* Smooth Animations */
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(15px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1.0); }
+        /* Touch-friendly buttons */
+        .touch-button {
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .animate-slide-in-up { animation: slideInUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-slide-in-up { 
+            animation: slideInUp 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; 
+        }
         
         @keyframes loading-blink { 50% { opacity: 0.3; } }
         .loading-dot { animation: loading-blink 1.2s infinite steps(1, start); }
@@ -106,194 +207,307 @@
         @keyframes cursor-blink { 50% { opacity: 0; } }
         .blinking-cursor { animation: cursor-blink 1s step-end infinite; }
 
+        /* Mobile-optimized input */
+        .mobile-input {
+            width: 100%;
+            background: transparent;
+            color: #f3f4f6;
+            padding: 12px 48px 12px 16px;
+            font-size: 16px !important;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            -webkit-appearance: none;
+            border: none;
+        }
+        
+        .mobile-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        /* Example prompt buttons */
+        .example-prompt {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #e5e7eb;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+        
+        .example-prompt:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Keyboard open state */
+        .keyboard-open .chat-area {
+            padding-bottom: 20px;
+        }
+        
+        /* Loading state improvements */
+        .loading-indicator {
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        /* iOS-specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .app-container {
+                height: -webkit-fill-available;
+            }
+            
+            .mobile-input {
+                font-size: 16px !important;
+                transform: translateZ(0);
+            }
+        }
+        
+        /* Small device optimizations */
+        @media (max-height: 600px) {
+            .app-header {
+                padding-top: 0;
+            }
+            
+            .empty-chat-placeholder h1 {
+                font-size: 3rem;
+            }
+            
+            .empty-chat-placeholder p {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-container" id="appContainer">
         
-        <header class="flex-shrink-0 flex items-center justify-between px-4 py-3 glassy z-10 border-b">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">M</div>
-                <span class="font-bold text-xl text-white tracking-tight">MchaT</span>
-            </div>
-            <button id="clear-chat-btn" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
-            </button>
-        </header>
-
-        <main id="chat-container" class="relative flex-1 overflow-y-auto p-4 space-y-4 main-content">
-            <div class="aurora-bg"></div>
-            <div id="empty-chat-placeholder" class="relative z-10 flex flex-col items-center justify-center h-full text-center p-6 animate-slide-in-up">
-                 <h1 class="text-6xl font-extrabold text-white mb-3 tracking-tighter">MchaT </h1>
-                 <p class="text-gray-300 text-lg mb-10">Your personal AI assistant.</p>
-                 <div class="grid grid-cols-2 gap-3 w-full max-w-md">
-                     <!-- ** FIX: Added whitespace-nowrap to keep text on one line and text-ellipsis for overflow ** -->
-                     <button class="example-prompt whitespace-nowrap overflow-hidden text-ellipsis">Explain quantum physics</button>
-                     <button class="example-prompt whitespace-nowrap overflow-hidden text-ellipsis">Write a song about space</button>
-                     <button class="example-prompt whitespace-nowrap overflow-hidden text-ellipsis">How do I make sushi?</button>
-                     <button class="example-prompt whitespace-nowrap overflow-hidden text-ellipsis">Plan a trip to Italy</button>
-                 </div>
-                 <p class="text-gray-500 text-xs mt-12 absolute bottom-10">Created by Monis</p>
-            </div>
-        </main>
-        
-        <footer class="flex-shrink-0 glassy border-t pb-safe main-content">
-            <div id="loading-indicator" class="hidden px-4 pt-2 pb-1">
-                <div class="flex items-center space-x-1">
-                    <span class="text-sm text-gray-400">MchaT is thinking</span>
-                    <div class="loading-dot">.</div>
-                    <div class="loading-dot">.</div>
-                    <div class="loading-dot">.</div>
+        <header class="app-header">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-3" onclick="location.reload()">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">M</div>
+                    <span class="font-bold text-xl text-white tracking-tight">MchaT</span>
                 </div>
-            </div>
+                <button id="clear-chat-btn" class="touch-button rounded-full hover:bg-white/10 active:bg-white/20 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+               </button>
+           </div>
+       </header>
 
-            <div class="relative px-3 py-3">
-                <div class="relative bg-black/50 border border-white/10 rounded-xl shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-indigo-500/50">
-                    <textarea 
-                        id="chatInput"
-                        rows="1"
-                        class="w-full bg-transparent text-gray-200 placeholder-gray-500 p-4 pr-14 focus:outline-none resize-none overflow-y-auto min-h-[52px] max-h-[150px] rounded-xl"
-                        placeholder="Message MchaT..."
-                        enterkeyhint="send"
-                    ></textarea>
-                    
-                    <button id="send-btn" class="absolute right-2.5 bottom-2.5 bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:opacity-90 active:scale-95 transition-all duration-200 p-2.5 rounded-lg flex items-center justify-center disabled:bg-gray-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-50 w-10 h-10">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
-                           <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </button>
+       <main id="chat-container" class="chat-area scrollable">
+           <div class="aurora-bg"></div>
+           <div id="empty-chat-placeholder" class="relative z-10 flex flex-col items-center justify-center h-full text-center p-6 animate-slide-in-up">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-3 tracking-tighter">MchaT</h1>
+                <p class="text-gray-300 text-base md:text-lg mb-8">Your personal AI assistant.</p>
+                <div class="grid grid-cols-2 gap-3 w-full max-w-md px-4">
+                    <button class="example-prompt">Explain quantum physics</button>
+                    <button class="example-prompt">Write a song about space</button>
+                    <button class="example-prompt">How do I make sushi?</button>
+                    <button class="example-prompt">Plan a trip to Italy</button>
                 </div>
-            </div>
-        </footer>
-    </div>
+                <p class="text-gray-500 text-xs mt-12 absolute bottom-10">Created by Monis</p>
+           </div>
+       </main>
+       
+       <div class="input-area" id="inputArea">
+           <div id="loading-indicator" class="loading-indicator hidden">
+               <div class="flex items-center space-x-1">
+                   <span class="text-sm">MchaT is thinking</span>
+                   <div class="loading-dot">.</div>
+                   <div class="loading-dot">.</div>
+                   <div class="loading-dot">.</div>
+               </div>
+           </div>
 
-    <script>
-        // --- DOM Element References ---
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('send-btn');
-        const chatContainer = document.getElementById('chat-container');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const clearChatBtn = document.getElementById('clear-chat-btn');
-        let emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
+           <div class="relative px-3 py-3">
+               <div class="relative bg-black/50 border border-white/10 rounded-2xl shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-indigo-500/30">
+                   <textarea 
+                       id="chatInput"
+                       rows="1"
+                       class="mobile-input min-h-[48px] max-h-[120px]"
+                       placeholder="Message MchaT..."
+                       enterkeyhint="send"
+                   ></textarea>
+                   
+                   <button id="send-btn" class="absolute right-2 bottom-2 touch-button bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:opacity-90 active:scale-95 transition-all duration-200 rounded-xl flex items-center justify-center disabled:bg-gray-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100 disabled:opacity-50 w-10 h-10">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                       </svg>
+                   </button>
+               </div>
+           </div>
+       </div>
+   </div>
 
-        // Initialize markdown-it
-        const md = window.markdownit({ html: true, linkify: true, typographer: true, breaks: true });
+   <script>
+       // --- DOM Element References ---
+       const chatInput = document.getElementById('chatInput');
+       const sendBtn = document.getElementById('send-btn');
+       const chatContainer = document.getElementById('chat-container');
+       const loadingIndicator = document.getElementById('loading-indicator');
+       const clearChatBtn = document.getElementById('clear-chat-btn');
+       const appContainer = document.getElementById('appContainer');
+       const inputArea = document.getElementById('inputArea');
+       let emptyChatPlaceholder = document.getElementById('empty-chat-placeholder');
 
-        // State management
-        let chatHistory = [];
-        let isLoading = false;
-        
-        // --- Gemini API Configuration ---
-        const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-        
-        const systemInstruction = {
-            role: "system",
-            parts: [{ text: "You are MchaT, a helpful AI assistant. Your personality is clear, concise, and friendly. Provide answers directly without unnecessary fluff. Keep responses mobile-friendly."}]
-        };
+       const md = window.markdownit({ html: true, linkify: true, typographer: true, breaks: true });
 
-        // --- Core Functions ---
+       let chatHistory = [];
+       let isLoading = false;
+       let lastScrollPosition = 0;
+       
+       // --- Mobile Keyboard Handling ---
+       let windowHeight = window.innerHeight;
+       let isKeyboardOpen = false;
+       
+       // Detect keyboard opening/closing
+       function handleViewportChange() {
+           const currentHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+           const heightDifference = windowHeight - currentHeight;
+           
+           if (heightDifference > 100) {
+               // Keyboard is likely open
+               isKeyboardOpen = true;
+               document.body.classList.add('keyboard-open');
+               
+               // Scroll to bottom when keyboard opens
+               setTimeout(() => {
+                   scrollToBottom();
+               }, 300);
+           } else {
+               // Keyboard is likely closed
+               isKeyboardOpen = false;
+               document.body.classList.remove('keyboard-open');
+           }
+       }
+       
+       // Visual Viewport API for better mobile support
+       if ('visualViewport' in window) {
+           window.visualViewport.addEventListener('resize', handleViewportChange);
+           window.visualViewport.addEventListener('scroll', handleViewportChange);
+       } else {
+           // Fallback for older browsers
+           window.addEventListener('resize', handleViewportChange);
+       }
+       
+       // Handle orientation changes
+       window.addEventListener('orientationchange', () => {
+           setTimeout(() => {
+               windowHeight = window.innerHeight;
+               resizeTextarea();
+           }, 500);
+       });
+       
+       // --- Gemini API Configuration ---
+       const API_KEY = "AIzaSyDIEjiLmCZ-YRXV17MHMNIN6Tl1kZZYetk";
+       const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+       
+       const systemInstruction = {
+           role: "system",
+           parts: [{ text: "You are MchaT, a helpful AI assistant. Your personality is clear, concise, and friendly. Provide answers directly without unnecessary fluff. Keep responses mobile-friendly with shorter paragraphs."}]
+       };
 
-        // Auto-resizes the textarea based on content
-        function resizeTextarea() {
-            chatInput.style.height = 'auto';
-            chatInput.style.height = `${Math.min(chatInput.scrollHeight, 150)}px`;
-        }
+       // --- Core Functions ---
 
-        // Smoothly scrolls the chat container to the bottom
-        function scrollToBottom() {
-            setTimeout(() => chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }), 100);
-        }
+       function resizeTextarea() {
+           chatInput.style.height = 'auto';
+           const newHeight = Math.min(chatInput.scrollHeight, 120);
+           chatInput.style.height = `${newHeight}px`;
+       }
 
-        // Fetches a response from the Gemini API
-        async function callGeminiAPI(prompt, history) {
-            const payload = {
-                contents: [...history, { role: "user", parts: [{ text: prompt }] }],
-                systemInstruction: systemInstruction,
-            };
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                const result = await response.json();
-                const text = result.candidates[0]?.content?.parts[0]?.text || "Sorry, I had trouble responding.";
-                // Simple brand safety replacement
-                return text.replace(/google/gi, 'MchaT');
-            } catch (error) {
-                console.error("API Error:", error);
-                return "My apologies, I've encountered an error. Please try again.";
-            }
-        }
+       function scrollToBottom(smooth = true) {
+           requestAnimationFrame(() => {
+               chatContainer.scrollTo({ 
+                   top: chatContainer.scrollHeight, 
+                   behavior: smooth ? 'smooth' : 'instant' 
+               });
+           });
+       }
 
-        // Renders AI response with a typewriter effect
-        function typeWriterEffect(element, text) {
-            const words = text.split(/(\s+)/);
-            let wordIndex = 0;
-            element.innerHTML = '<span class="blinking-cursor">▋</span>';
-            const interval = 50; // Milliseconds per word
+       async function callGeminiAPI(prompt, history) {
+           const payload = {
+               contents: [...history, { role: "user", parts: [{ text: prompt }] }],
+               systemInstruction: systemInstruction,
+           };
+           try {
+               const response = await fetch(API_URL, {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify(payload)
+               });
+               if (!response.ok) throw new Error(`API Error: ${response.status}`);
+               const result = await response.json();
+               const text = result.candidates[0]?.content?.parts[0]?.text || "Sorry, I had trouble responding.";
+               return text.replace(/google/gi, 'MchaT');
+           } catch (error) {
+               console.error("API Error:", error);
+               return "My apologies, I've encountered an error. Please try again.";
+           }
+       }
 
-            const type = () => {
-                if (wordIndex < words.length) {
-                    const currentText = words.slice(0, wordIndex + 1).join('');
-                    element.innerHTML = md.render(currentText) + '<span class="blinking-cursor">▋</span>';
-                    wordIndex++;
-                    scrollToBottom();
-                    setTimeout(type, interval);
-                } else {
-                    element.innerHTML = md.render(text);
-                    setLoading(false);
-                    // Refocus input on desktop after response for quicker follow-up
-                    if(window.innerWidth > 768) chatInput.focus();
-                }
-            };
-            type();
-        }
+       function typeWriterEffect(element, text) {
+           const words = text.split(/(\s+)/);
+           let wordIndex = 0;
+           element.innerHTML = '<span class="blinking-cursor">▋</span>';
+           const interval = 30; // ms per word
 
-        // Adds a message bubble to the chat container
-        function appendMessage(message, sender) {
-            const wrapper = document.createElement('div');
-            const bubble = document.createElement('div');
-            wrapper.classList.add('flex', 'animate-slide-in-up', 'relative', 'z-10');
-            bubble.classList.add('chat-bubble', 'rounded-xl', 'p-4', 'max-w-full', 'break-words', 'shadow-lg');
+           const type = () => {
+               if (wordIndex < words.length) {
+                   const currentText = words.slice(0, wordIndex + 1).join('');
+                   element.innerHTML = md.render(currentText) + '<span class="blinking-cursor">▋</span>';
+                   wordIndex++;
+                   scrollToBottom();
+                   setTimeout(type, interval);
+               } else {
+                   element.innerHTML = md.render(text);
+                   setLoading(false);
+               }
+           };
+           type();
+       }
 
-            if (sender === 'user') {
-                wrapper.classList.add('justify-end');
-                bubble.classList.add('bg-white', 'text-black', 'ml-8');
-                bubble.textContent = message;
-            } else { // AI
-                wrapper.classList.add('justify-start');
-                bubble.classList.add('bg-black/40', 'border', 'border-white/10', 'prose', 'mr-8');
-            }
-            wrapper.appendChild(bubble);
-            chatContainer.appendChild(wrapper);
-            scrollToBottom();
-            
-            // If the message is from the AI, trigger the typewriter effect
-            if (sender === 'ai') {
-                typeWriterEffect(bubble, message);
-            }
-        }
+       function appendMessage(message, sender) {
+           const wrapper = document.createElement('div');
+           const bubble = document.createElement('div');
+           wrapper.classList.add('flex', 'animate-slide-in-up', 'relative', 'z-10', 'px-4', 'mb-4');
+           bubble.classList.add('chat-bubble', 'rounded-2xl', 'px-4', 'py-3', 'max-w-full', 'break-words', 'shadow-lg');
 
-        // Toggles the loading state of the UI
-        function setLoading(state) {
-            isLoading = state;
-            chatInput.disabled = state;
-            sendBtn.disabled = state;
-            loadingIndicator.classList.toggle('hidden', !state);
-        }
+           if (sender === 'user') {
+               wrapper.classList.add('justify-end');
+               bubble.classList.add('bg-white', 'text-black', 'ml-12');
+               bubble.textContent = message;
+           } else { // AI
+               wrapper.classList.add('justify-start');
+               bubble.classList.add('bg-black/40', 'border', 'border-white/10', 'prose', 'mr-12');
+           }
+           wrapper.appendChild(bubble);
+           chatContainer.appendChild(wrapper);
+           scrollToBottom();
+           
+           if (sender === 'ai') {
+               typeWriterEffect(bubble, message);
+           }
+       }
 
-        // Handles sending a message (user input or example prompt)
-        async function handleSendMessage(promptOverride = null) {
-            const prompt = promptOverride || chatInput.value.trim();
-            if (!prompt || isLoading) return;
-            
-            // Fade out and remove the initial placeholder if it exists
-            if (emptyChatPlaceholder) {
-                emptyChatPlaceholder.style.transition = 'opacity 0.3s ease';
+       function setLoading(state) {
+           isLoading = state;
+           chatInput.disabled = state;
+           sendBtn.disabled = state;
+           loadingIndicator.classList.toggle('hidden', !state);
+       }
+
+       async function handleSendMessage(promptOverride = null) {
+           const prompt = promptOverride || chatInput.value.trim();
+           if (!prompt || isLoading) return;
+           
+           if (emptyChatPlaceholder) {
+            emptyChatPlaceholder.style.transition = 'opacity 0.3s ease';
                 emptyChatPlaceholder.style.opacity = '0';
                 setTimeout(() => {
                     if (emptyChatPlaceholder) emptyChatPlaceholder.remove();
@@ -309,11 +523,32 @@
             setLoading(true);
 
             const aiResponse = await callGeminiAPI(prompt, chatHistory);
-            // Update chat history for context in future calls
             chatHistory.push({ role: "user", parts: [{ text: prompt }] });
             chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
             
             appendMessage(aiResponse, 'ai');
+        }
+
+        function clearChat() {
+            // Create custom confirmation modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-slide-in-up';
+            modal.innerHTML = `
+                <div class="bg-gray-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                    <h3 class="text-lg font-semibold text-white mb-3">Clear chat history?</h3>
+                    <p class="text-gray-400 text-sm mb-6">This will delete all messages and cannot be undone.</p>
+                    <div class="flex gap-3">
+                        <button id="cancel-clear" class="flex-1 px-4 py-2.5 bg-gray-800 text-gray-300 rounded-xl font-medium hover:bg-gray-700 transition-colors">Cancel</button>
+                        <button id="confirm-clear" class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors">Clear</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            document.getElementById('cancel-clear').addEventListener('click', () => modal.remove());
+            document.getElementById('confirm-clear').addEventListener('click', () => {
+                location.reload();
+            });
         }
 
         // --- Event Listeners ---
@@ -321,32 +556,111 @@
         
         chatInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Prevent new line on Enter
+                e.preventDefault();
                 handleSendMessage();
             }
         });
-
+        
         chatInput.addEventListener('input', resizeTextarea);
-
-        clearChatBtn.addEventListener('click', () => {
-             // A simple reload is an easy way to clear the chat state
-             location.reload();
+        
+        // Better mobile input handling
+        chatInput.addEventListener('focus', () => {
+            // Small delay to ensure keyboard is fully open
+            setTimeout(() => {
+                scrollToBottom();
+            }, 300);
         });
-
+        
+        chatInput.addEventListener('blur', () => {
+            // Prevent page from getting stuck in weird scroll position
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
+        
+        clearChatBtn.addEventListener('click', clearChat);
+        
+        // Example prompt buttons
         document.querySelectorAll('.example-prompt').forEach(button => {
-            // Add base styling to prompts for consistency
-            button.classList.add('bg-white/5', 'border', 'border-white/10', 'p-3', 'rounded-lg', 'text-sm', 'text-gray-300', 'text-center', 'hover:bg-white/10', 'hover:border-white/20', 'transition-colors', 'duration-200', 'backdrop-blur-sm');
-            button.addEventListener('click', () => handleSendMessage(button.textContent));
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleSendMessage(this.textContent);
+            });
+        });
+        
+        // Prevent pull-to-refresh on mobile
+        let touchStartY = 0;
+        chatContainer.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        
+        chatContainer.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const scrollTop = chatContainer.scrollTop;
+            
+            if (scrollTop === 0 && touchY > touchStartY) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Handle safe area updates
+        function updateSafeAreas() {
+            const root = document.documentElement;
+            const safeAreaTop = getComputedStyle(root).getPropertyValue('--safe-area-inset-top');
+            const safeAreaBottom = getComputedStyle(root).getPropertyValue('--safe-area-inset-bottom');
+            
+            // Update CSS variables if needed
+            root.style.setProperty('--safe-top', safeAreaTop);
+            root.style.setProperty('--safe-bottom', safeAreaBottom);
+        }
+        
+        // --- PWA Installation ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
         });
         
         // --- Initialization ---
         window.addEventListener('load', () => {
             resizeTextarea();
-            // Focus the input on desktop for immediate typing
-            if (window.innerWidth > 768) {
+            updateSafeAreas();
+            
+            // Set initial viewport height
+            windowHeight = window.innerHeight;
+            
+            // Prevent overscroll bounce
+            document.body.addEventListener('touchmove', (e) => {
+                if (e.target === document.body) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Focus management for better mobile UX
+            if ('ontouchstart' in window) {
+                // On mobile, don't auto-focus to prevent keyboard popup
+                chatInput.blur();
+            } else {
+                // On desktop, auto-focus
                 chatInput.focus();
             }
         });
+        
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isKeyboardOpen) {
+                // Refocus input when returning to app
+                setTimeout(() => {
+                    chatInput.focus();
+                }, 100);
+            }
+        });
+        
+        // Service Worker for PWA (optional)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript,')
+                .catch(err => console.log('Service Worker registration failed'));
+        }
     </script>
 
 </body>
